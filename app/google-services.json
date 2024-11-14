@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "619289553362",
+    "firebase_url": "https://yukti-70d79-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "yukti-70d79",
+    "storage_bucket": "yukti-70d79.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619289553362:android:1f7192c1845b7cf3cd400b",
+        "android_client_info": {
+          "package_name": "com.example.yukti"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "619289553362-gjno612inf0ij83afmq3du0sv60l24n7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYg-raQvCElH51WJJUKep3OLIxcsy13GE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "619289553362-gjno612inf0ij83afmq3du0sv60l24n7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
