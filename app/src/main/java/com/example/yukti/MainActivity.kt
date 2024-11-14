@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.learningcompose.update.ShowUpdateDialog
 import com.example.learningcompose.update.UpdateChecker
+import com.example.yukti.chat.ChatPage
 import com.example.yukti.ui.theme.YuktiTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,10 +32,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             YuktiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+
+                    ChatPage(modifier = Modifier.padding(innerPadding))
 
                     // Show the update dialog if needed
                     if (showDialog && apkUrl != null) {
@@ -62,13 +61,5 @@ class MainActivity : ComponentActivity() {
         startActivity(intent)
     }
 
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
 }
 
