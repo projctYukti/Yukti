@@ -1,31 +1,49 @@
 package com.example.yukti.chat
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.collection.mutableIntListOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yukti.gitignore.Constants
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ChatViewModel : ViewModel() {
 
-    private val _messageList = MutableStateFlow<List<MessageModel>>(emptyList())
-    val messageList: StateFlow<List<MessageModel>> = _messageList
 
-    // Simulated sendMessage function to add user and response messages
+    val messageList by lazy { mutableStateListOf<MessageModel>() }
+
+
+
+    private val generativeModel = GenerativeModel(
+        modelName = "gemini-1.5-flash",
+        apiKey = Constants.apiKey
+    )
+
+
     fun sendMessage(question: String) {
-        viewModelScope.launch {
-            // Update messageList with the user's message
-            val updatedMessages = _messageList.value.toMutableList().apply {
-                add(MessageModel(question, "user"))
-            }
-            _messageList.value = updatedMessages
 
-            // Simulate receiving a response from the model
-            val response = "Response to: $question"
-            _messageList.value = updatedMessages + MessageModel(response, "model")
+        viewModelScope.launch{
+            val chat = generativeModel.startChat(
+                history = messageList.map{
+                    content(it.role){
+                        text(it.message)
+                    }
+                }.toList()
+            )
+
+            messageList.add(MessageModel(question, "user"))
+            messageList.add(MessageModel("Typing...", "model"))
+            val response = chat.sendMessage(question)
+            messageList.removeAt(messageList.size-1)
+            messageList.add(MessageModel(response.text.toString(), "model"))
+
         }
     }
 }
