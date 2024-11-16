@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.libs
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -13,7 +15,7 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
+        versionCode = 6
         versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -43,6 +45,14 @@ android {
 dependencies {
 
     implementation(libs.generativeai)
+    implementation (libs.androidx.navigation.compose)
+    implementation (libs.jetbrains.kotlinx.coroutines.play.services)
+    implementation (libs.play.services.auth)
+    implementation (libs.firebase.auth.ktx)
+    implementation (libs.kotlinx.coroutines.play.services.v161)
+    implementation(libs.firebase.bom)
+
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -54,6 +64,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.inappmessaging.display)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
