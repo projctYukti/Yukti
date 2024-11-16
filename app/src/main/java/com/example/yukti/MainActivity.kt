@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import com.example.learningcompose.update.ShowUpdateDialog
 import com.example.learningcompose.update.UpdateChecker
+
 import com.example.yukti.chat.ChatPage
 import com.example.yukti.chat.ChatViewModel
 import com.example.yukti.chat.MessageModel
@@ -37,8 +38,6 @@ class MainActivity : ComponentActivity() {
             YuktiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    ChatPage(modifier = Modifier.padding(innerPadding),chatViewModel)
-
                     // Show the update dialog if needed
                     if (showDialog && apkUrl != null) {
                         ShowUpdateDialog(
@@ -46,6 +45,15 @@ class MainActivity : ComponentActivity() {
                             onUpdate = { apkUrl?.let { downloadAndInstallApk(it) } }
                         )
                     }
+
+                    ChatPage(
+                        modifier = Modifier.padding(innerPadding),
+                        chatViewModel
+                    )
+
+
+
+
                 }
             }
 
