@@ -8,6 +8,8 @@ plugins {
 }
 
 android {
+
+
     namespace = "com.example.yukti"
     compileSdk = 35
 
@@ -15,19 +17,21 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "2.0.0"
+        versionCode = 7
+        versionName = "3.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
         }
     }
     compileOptions {
