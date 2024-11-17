@@ -83,7 +83,9 @@ class MainActivity : ComponentActivity() {
 
                             LaunchedEffect(key1 = Unit) {
                                 if (googleAuthUiClient.getSignedInUser() != null){
-                                    navController.navigate("chat")
+                                    navController.navigate("chat"){
+                                    popUpTo("sign_in") { inclusive = true }}
+
                                 }
                             }
 

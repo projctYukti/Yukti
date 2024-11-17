@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "619289553362-6smju8k51ca3o2ms2vgkvci7cefg5ht8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.yukti",
+            "certificate_hash": "826013509906f7fd586441a05cf1ee28c6de3449"
+          }
+        },
+        {
           "client_id": "619289553362-sf7tfgd829mrklcjvtcgkvc9dk3sac03.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
