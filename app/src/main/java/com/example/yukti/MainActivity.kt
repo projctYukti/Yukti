@@ -60,11 +60,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Install the splash screen
-        val splashScreen = installSplashScreen()
-        splashScreen.setKeepOnScreenCondition {
-            // Keep the splash screen visible while checking the login status
-            googleAuthUiClient.getSignedInUser() == null
-        }
+         installSplashScreen()
+
 
         enableEdgeToEdge()
         checkForUpdates()
