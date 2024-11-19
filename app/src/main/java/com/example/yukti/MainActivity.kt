@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -57,13 +58,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkForUpdates()
+
+        // Install the splash screen
+         installSplashScreen()
+
+
         enableEdgeToEdge()
+        checkForUpdates()
 
-        // Create ChatViewModel
+        // Determine the start destination based on login status
+        val startDestination = if (googleAuthUiClient.getSignedInUser() != null) {
+            "chat"
+        } else {
+            "sign_in"
+        }
 
-
-        // Set content for the activity
+        // Set the content for the activity
         setContent {
             YuktiTheme {
                 val chatViewModel = ViewModelProvider(this)[ChatViewModel::class.java]
@@ -71,23 +81,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // The navigation controller
+                    // Navigation controller
                     val navController = rememberNavController()
 
-                    // Navigation between screens
-                    NavHost(navController = navController, startDestination = "sign_in") {
+                    // Navigation host
+                    NavHost(navController = navController, startDestination = startDestination) {
                         // Sign-in screen
                         composable("sign_in") {
                             val viewModel = viewModel<SignInViewModel>()
                             val state by viewModel.state.collectAsStateWithLifecycle()
-
-                            LaunchedEffect(key1 = Unit) {
-                                if (googleAuthUiClient.getSignedInUser() != null){
-                                    navController.navigate("chat"){
-                                    popUpTo("sign_in") { inclusive = true }}
-
-                                }
-                            }
 
                             // Handle Google sign-in result
                             val launcher = rememberLauncherForActivityResult(
@@ -104,14 +106,13 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
 
-                            LaunchedEffect(key1 = state.isSignInSuccessful) {
+                            LaunchedEffect(state.isSignInSuccessful) {
                                 if (state.isSignInSuccessful) {
                                     Toast.makeText(
                                         applicationContext,
                                         "Sign in successful",
                                         Toast.LENGTH_LONG
                                     ).show()
-                                    // Navigate to chat after successful sign-in
                                     navController.navigate("chat") {
                                         popUpTo("sign_in") { inclusive = true }
                                     }
@@ -120,20 +121,21 @@ class MainActivity : ComponentActivity() {
 
                             val context = LocalContext.current
 
-                            // Sign-in screen UI
                             SignInScreen(
                                 state = state,
                                 onSignInClick = {
                                     lifecycleScope.launch {
                                         val signInIntentSender = googleAuthUiClient.signIn()
-
-                                        // Check if the sign-in intent sender is null
-                                        if (signInIntentSender == null) {
-                                            println("Failed to get Sign-In Intent: Ensure configuration is correct.")
-                                            Toast.makeText(context, "Failed to get Sign-In Intent", Toast.LENGTH_SHORT).show()
+                                        if (signInIntentSender != null) {
+                                            launcher.launch(
+                                                IntentSenderRequest.Builder(signInIntentSender).build()
+                                            )
                                         } else {
-                                            // Launch the sign-in intent sender
-                                            launcher.launch(IntentSenderRequest.Builder(signInIntentSender).build())
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to get Sign-In Intent",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                     }
                                 },
@@ -143,18 +145,15 @@ class MainActivity : ComponentActivity() {
 
                         // Chat screen
                         composable("chat") {
-                            // Pass ChatViewModel to ChatPage
                             ChatPage(chatViewModel = chatViewModel)
                         }
                     }
 
-                    // Show the update dialog if needed
+                    // Show update dialog if needed
                     if (showDialog && apkUrl != null) {
                         ShowUpdateDialog(
                             onDismiss = { showDialog = false },
-                            onUpdate = {
-                                apkUrl?.let { downloadAndInstallApk(it) }
-                            }
+                            onUpdate = { apkUrl?.let { downloadAndInstallApk(it) } }
                         )
                     }
                 }
@@ -162,20 +161,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Function to check for updates
     private fun checkForUpdates() {
-        val context = this
-
-        UpdateChecker.checkForUpdates(context) { url ->
+        UpdateChecker.checkForUpdates(this) { url ->
             apkUrl = url
             showDialog = true
         }
     }
 
-    // Function to download and install the APK if there's an update
     private fun downloadAndInstallApk(apkUrl: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl))
         startActivity(intent)
     }
 }
+
 
