@@ -17,6 +17,7 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 class ChatViewModel : ViewModel() {
@@ -46,28 +47,43 @@ class ChatViewModel : ViewModel() {
                 messageList.add(userMessageModel)
                 saveMessageToFirebase(chatId, userMessageModel)
 
+
+                // Add "Typing..." message to the local list (but do NOT save it to Firebase)
+                val typingMessage = MessageModel(message = "Typing...", role = "model")
+                messageList.add(typingMessage)
+
+
                 // Prepare chat history (include loaded Firebase messages)
-                val chatHistory = messageList.joinToString("\n") {
+
+                val chatHistory = messageList.filter { it.message != "Typing..." }.joinToString("\n") {
                     "${it.role}: ${it.message}"
                 }
+
 
 
 
                 // Send chat history to the generative AI model
                 val modelResponse = generativeModel.generateContent(chatHistory)
 
+                // Remove "Typing..." message from the local list
+                messageList.remove(typingMessage)
+
                 // Add the model's response to the local list and save to Firebase
                 val modelMessageModel = MessageModel(message = modelResponse.text.toString(), role = "model")
                 messageList.add(modelMessageModel)
                 saveMessageToFirebase(chatId, modelMessageModel)
 
-            } catch (e: Exception) {
-                _errorState.value = "Something went wrong. Please try again."
-                Log.d("Gemini", e.toString())
-                e.printStackTrace()
+//            } catch (e: Exception) {
+//                _errorState.value = "Something went wrong. Please try again."
+//                Log.d("Gemini", e.toString())
+//                e.printStackTrace()
             }catch (e : ServerException){
                 _errorState.value = "The model is overloaded. Please try again later."
-
+                Log.d("Gemini", e.toString())
+                e.printStackTrace()
+            }catch (e : SocketTimeoutException){
+                _errorState.value = "Connection timed out. Please check your internet connection and try again."
+                Log.d("Gemini", e.toString())
                 e.printStackTrace()
             }
         }
