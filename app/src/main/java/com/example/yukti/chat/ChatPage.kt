@@ -63,6 +63,8 @@ fun ChatPage(chatViewModel: ChatViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing
+                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
                 .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)// Respect system bars
         ) {
             Column(
