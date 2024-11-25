@@ -44,6 +44,7 @@ import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.sign_in.SignInViewModel
 import com.example.yukti.ui.theme.YuktiTheme
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -59,6 +60,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable persistence for Firebase Realtime Database
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
 
         // Install the splash screen

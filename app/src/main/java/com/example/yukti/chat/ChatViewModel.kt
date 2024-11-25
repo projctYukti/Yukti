@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class ChatViewModel : ViewModel() {
 
@@ -43,13 +45,14 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Add the user's message to the local list and save to Firebase
-                val userMessageModel = MessageModel(message = userMessage, role = "user")
+                val userMessageModel = MessageModel(message = userMessage, role = "user", timestamp = getCurrentDateTime())
+
                 messageList.add(userMessageModel)
                 saveMessageToFirebase(chatId, userMessageModel)
 
 
                 // Add "Typing..." message to the local list (but do NOT save it to Firebase)
-                val typingMessage = MessageModel(message = "Typing...", role = "model")
+                val typingMessage = MessageModel(message = "Typing...", role = "model", timestamp = getCurrentDateTime())
                 messageList.add(typingMessage)
 
 
@@ -69,7 +72,7 @@ class ChatViewModel : ViewModel() {
                 messageList.remove(typingMessage)
 
                 // Add the model's response to the local list and save to Firebase
-                val modelMessageModel = MessageModel(message = modelResponse.text.toString(), role = "model")
+                val modelMessageModel = MessageModel(message = modelResponse.text.toString(), role = "model", timestamp = getCurrentDateTime())
                 messageList.add(modelMessageModel)
                 saveMessageToFirebase(chatId, modelMessageModel)
 
@@ -112,7 +115,7 @@ class ChatViewModel : ViewModel() {
                         val message = messageSnapshot.child("message").value as? String
                         val role = messageSnapshot.child("role").value as? String
                         if (message != null && role != null) {
-                            newMessageList.add(MessageModel(message = message, role = role))
+                            newMessageList.add(MessageModel(message = message, role = role, timestamp = getCurrentDateTime()))
                         }
                     }
 
@@ -134,6 +137,14 @@ class ChatViewModel : ViewModel() {
     fun onChatScreenOpened(chatId: String) {
         loadChatMessages(chatId)
     }
+
+
+    fun getCurrentDateTime(): String {
+        val currentDateTime = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // You can customize the format
+        return currentDateTime.format(formatter)
+    }
+
 
 
 }
