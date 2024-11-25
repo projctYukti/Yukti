@@ -147,7 +147,7 @@ class MainActivity : ComponentActivity() {
 
                         // Chat screen
                         composable("chat") {
-                            ChatPage(chatViewModel = chatViewModel)
+                            ChatPage(chatViewModel = chatViewModel,googleAuthUiClient = googleAuthUiClient)
                         }
                     }
 
