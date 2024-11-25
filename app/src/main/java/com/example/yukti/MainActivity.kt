@@ -61,16 +61,28 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+
         // Enable persistence for Firebase Realtime Database
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
 
-        // Install the splash screen
-         installSplashScreen()
+
+
 
 
         enableEdgeToEdge()
+        // Temporarily disable persistence
+        FirebaseDatabase.getInstance().goOffline()
+        // Install the splash screen
+        installSplashScreen()
+
+// Perform your update check here
         checkForUpdates()
+
+// Re-enable persistence after the check
+        FirebaseDatabase.getInstance().goOnline()
+
 
         // Determine the start destination based on login status
         val startDestination = if (googleAuthUiClient.getSignedInUser() != null) {
