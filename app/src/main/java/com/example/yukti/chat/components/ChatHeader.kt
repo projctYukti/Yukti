@@ -4,6 +4,7 @@ package com.example.yukti.chat.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,12 +21,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.window.PopupProperties
+import com.example.yukti.chat.components.menu.NavDrawerItems
 import kotlinx.coroutines.Job
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatHeader(onSignOut: () -> Job){
+fun ChatHeader(onSignOut: () -> Job,
+               navItems: List<NavDrawerItems> = emptyList(), // Pass navigation items,
+               onNavigationIconClick: () -> Unit={}){
     var expanded by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxWidth(),
 
@@ -39,6 +43,11 @@ fun ChatHeader(onSignOut: () -> Job){
 //               titleContentColor = Color.White, // Title text color
 //               navigationIconContentColor = Color.White // Navigation icon color
 //           ),
+           navigationIcon = {
+               IconButton(onClick = onNavigationIconClick) {
+                   Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
+               }
+           },
            title = { Text("Chat",
                textAlign = TextAlign.Center,
                modifier = Modifier.fillMaxWidth()) },

@@ -9,11 +9,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,16 +41,23 @@ import com.example.yukti.MainActivity
 
 
 import com.example.yukti.chat.components.ChatHeader
+import com.example.yukti.chat.components.menu.DrawerBody
+import com.example.yukti.chat.components.menu.DrawerHeader
+import com.example.yukti.chat.components.menu.NavDrawerItems
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 @Composable
 fun ChatPage(chatViewModel: ChatViewModel,googleAuthUiClient : GoogleAuthUiClient
              ) {
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     val errorState by chatViewModel.errorState.collectAsState()
     val context = LocalContext.current
@@ -62,11 +78,9 @@ fun ChatPage(chatViewModel: ChatViewModel,googleAuthUiClient : GoogleAuthUiClien
                 // Kill the current activity and navigate to GoogleAuthUiClient (login activity)
                 val intent = Intent(context, MainActivity::class.java)
                 context.startActivity(intent)
+                (context as? Activity)?.finish()
 
                 // Finish the current activity to prevent going back to it after sign-out
-                if (context is Activity) {
-                    context.finish()  // Close the current activity
-                }
 
             } catch (e: Exception) {
                 Toast.makeText(context, "Sign out failed: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -84,35 +98,80 @@ fun ChatPage(chatViewModel: ChatViewModel,googleAuthUiClient : GoogleAuthUiClien
             chatViewModel._errorState.value = null
         }
     }
+    val navItems = listOf(
+        NavDrawerItems(
+            "Create a business",
+            "Create a business",
+            "Go to Create a business page",
+            icon = Icons.Default.Create
+        ),
+        NavDrawerItems(
+            "Join a business",
+            "Join a business",
+            "Go to Join a business page",
+            icon = Icons.Default.AddCircle
+        )
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        ChatHeader(onSignOut = signOutAction)
+    )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing
-                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)// Respect system bars
-        ) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-
+                .fillMaxHeight()
+                .background(Color.Gray) // Optional semi-transparent background
             ) {
-                // Message list adjusts dynamically to keyboard
-                MessageList(
-                    modifier = Modifier
-                        .weight(1f),
-                    messageList = chatViewModel.messageList
-                )
+            DrawerHeader()
 
-                // Message input stays above the keyboard
-                MessageInput(
-                    onMessageSend = {
-                        chatViewModel.sendMessage(chatId, it)
+            DrawerBody(
+                items = navItems,
+                onItemClick = { item ->
+                    Toast.makeText(context, "Clicked: ${item.title}", Toast.LENGTH_SHORT).show()
+                    scope.launch { drawerState.close() } // Close the drawer after item selection.
+                }
+            )
+        }}
+    ) {
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            ChatHeader(onSignOut = signOutAction,
+                navItems = navItems,
+                onNavigationIconClick = {
+                    scope.launch {
+                        if (drawerState.isClosed) drawerState.open() else drawerState.close()
                     }
-                )
+                }
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing
+                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                    )
+                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)// Respect system bars
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+
+                ) {
+                    // Message list adjusts dynamically to keyboard
+                    MessageList(
+                        modifier = Modifier
+                            .weight(1f),
+                        messageList = chatViewModel.messageList
+                    )
+
+                    // Message input stays above the keyboard
+                    MessageInput(
+                        onMessageSend = {
+                            chatViewModel.sendMessage(chatId, it)
+                        }
+                    )
+                }
             }
         }
     }
