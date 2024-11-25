@@ -1,31 +1,32 @@
 package com.example.yukti.chat.components
 
-import android.R
-import android.R.color.black
-import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.window.PopupProperties
+import kotlinx.coroutines.Job
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatHeader(){
+fun ChatHeader(onSignOut: () -> Job){
+    var expanded by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxWidth(),
 
 
@@ -40,6 +41,24 @@ fun ChatHeader(){
 //           ),
            title = { Text("Chat",
                textAlign = TextAlign.Center,
-               modifier = Modifier.fillMaxWidth()) })
+               modifier = Modifier.fillMaxWidth()) },
+           actions = {
+               IconButton(onClick = { expanded = !expanded }) {
+                   Icon(Icons.Default.MoreVert, contentDescription = "More options")
+               }
+               DropdownMenu(
+                   expanded = expanded,
+                   onDismissRequest = { expanded = false },
+                   properties = PopupProperties(focusable = true)
+               ) {
+                   DropdownMenuItem(
+                       text = { Text("Sign Out") },
+                       onClick = {
+                           expanded = false
+                           onSignOut()
+                       }
+                   )
+               }
+           })
     }
 }
