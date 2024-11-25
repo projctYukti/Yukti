@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +44,7 @@ import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.sign_in.SignInViewModel
 import com.example.yukti.ui.theme.YuktiTheme
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -59,12 +61,28 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Install the splash screen
-         installSplashScreen()
+
+
+        // Enable persistence for Firebase Realtime Database
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
+
+
+
 
 
         enableEdgeToEdge()
+        // Temporarily disable persistence
+        FirebaseDatabase.getInstance().goOffline()
+        // Install the splash screen
+        installSplashScreen()
+
+// Perform your update check here
         checkForUpdates()
+
+// Re-enable persistence after the check
+        FirebaseDatabase.getInstance().goOnline()
+
 
         // Determine the start destination based on login status
         val startDestination = if (googleAuthUiClient.getSignedInUser() != null) {
@@ -145,7 +163,7 @@ class MainActivity : ComponentActivity() {
 
                         // Chat screen
                         composable("chat") {
-                            ChatPage(chatViewModel = chatViewModel)
+                            ChatPage(chatViewModel = chatViewModel,googleAuthUiClient = googleAuthUiClient)
                         }
                     }
 

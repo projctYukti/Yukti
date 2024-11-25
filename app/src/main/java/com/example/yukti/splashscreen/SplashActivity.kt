@@ -1,0 +1,56 @@
+package com.example.yukti.splashscreen
+
+
+
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+
+import com.example.yukti.MainActivity
+import com.example.yukti.ui.theme.YuktiTheme
+import kotlinx.coroutines.delay
+
+class SplashActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Use the native splash screen API for Android 12+ (API 31 and above
+
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish() // Close SplashActivity
+
+
+
+
+        } else {
+
+            // For devices below Android 12, use the manual splash screen
+            enableEdgeToEdge()
+            setContent {
+                YuktiTheme {
+                    SplashScreen {
+                        // Once the splash screen duration is over, do something
+                        // For example, start the MainActivity
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish() // Close the SplashActivity
+                    }
+                }
+            }
+
+        }
+    }
+}

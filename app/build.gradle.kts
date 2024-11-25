@@ -17,8 +17,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "4.0.1"
+        versionCode = 17
+        versionName = "4.1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -56,6 +56,9 @@ dependencies {
     implementation (libs.kotlinx.coroutines.play.services.v161)
     implementation(libs.firebase.bom)
 
+    implementation (libs.material3)
+    implementation (libs.ui)
+    implementation (libs.androidx.foundation)
 
 
     implementation(libs.androidx.core.ktx)
@@ -79,4 +82,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation (libs.androidx.core.splashscreen)
+    implementation (libs.material3)
+
 }
