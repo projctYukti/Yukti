@@ -10,6 +10,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.example.yukti.R
+import com.google.firebase.database.ktx.database
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 
@@ -18,6 +19,7 @@ class GoogleAuthUiClient(
     private val oneTapClient: SignInClient
 ) {
     private val auth = Firebase.auth
+    private val database = Firebase.database.reference // Firebase Database reference
 
     suspend fun signIn(): IntentSender? {
         return try {
@@ -48,13 +50,16 @@ class GoogleAuthUiClient(
             val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
             val user = auth.signInWithCredential(googleCredentials).await().user
 
-            SignInResult(
-                data = user?.run {
-                    println("User signed in: $displayName ($uid)")
-                    UserData(uid, displayName, photoUrl?.toString())
-                },
-                errorMessage = null
-            )
+            val userData = user?.run {
+                UserData(uid, displayName, photoUrl?.toString())
+            }
+
+            if (userData != null) {
+                saveUserToDatabase(userData) // Save user data to Realtime Database
+            }
+
+            SignInResult(data = userData, errorMessage = null)
+
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
@@ -94,5 +99,15 @@ class GoogleAuthUiClient(
             )
             .setAutoSelectEnabled(true)
             .build()
+    }
+    suspend fun saveUserToDatabase(userData: UserData) {
+        try {
+            val userRef = database.child("users").child(userData.userId)
+            userRef.setValue(userData).await()
+            println("User data saved to database: ${userData.username}")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Error saving user data to database: ${e.message}")
+        }
     }
 }

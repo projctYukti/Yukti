@@ -17,8 +17,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 17
-        versionName = "4.1.8"
+        versionCode = 18
+        versionName = "4.1.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,6 +47,9 @@ android {
 }
 
 dependencies {
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    implementation("io.coil-kt:coil-compose:2.3.0")
+
 
     implementation(libs.generativeai)
     implementation (libs.androidx.navigation.compose)
