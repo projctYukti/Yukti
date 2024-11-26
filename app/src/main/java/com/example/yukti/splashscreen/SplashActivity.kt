@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 import com.example.yukti.MainActivity
 import com.example.yukti.ui.theme.YuktiTheme
@@ -30,7 +31,11 @@ class SplashActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // Use the native splash screen API for Android 12+ (API 31 and above
 
-                        startActivity(Intent(this, MainActivity::class.java))
+            // Install the splash screen
+            installSplashScreen()
+
+
+            startActivity(Intent(this, MainActivity::class.java))
                         finish() // Close SplashActivity
 
 
@@ -42,11 +47,9 @@ class SplashActivity : ComponentActivity() {
             enableEdgeToEdge()
             setContent {
                 YuktiTheme {
-                    SplashScreen {
-                        // Once the splash screen duration is over, do something
-                        // For example, start the MainActivity
+                    SplashScreen{
                         startActivity(Intent(this, MainActivity::class.java))
-                        finish() // Close the SplashActivity
+                        finish() // Close SplashActivity
                     }
                 }
             }

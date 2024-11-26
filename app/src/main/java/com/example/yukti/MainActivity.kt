@@ -39,16 +39,8 @@ class MainActivity : ComponentActivity() {
 
 
 
-
-
-
-
-
-
         enableEdgeToEdge()
 
-        // Install the splash screen
-        installSplashScreen()
 
 // Perform your update check here
         checkForUpdates()
