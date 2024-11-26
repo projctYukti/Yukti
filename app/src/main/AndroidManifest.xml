@@ -29,6 +29,8 @@
             android:theme="@style/Theme.App.Starting">
 
         </activity>
+        <activity android:name=".createbusiness.SubscriptionActivity" />
+
     </application>
 
 </manifest>
