@@ -103,11 +103,26 @@ class GoogleAuthUiClient(
     suspend fun saveUserToDatabase(userData: UserData) {
         try {
             val userRef = database.child("users").child(userData.userId)
-            userRef.setValue(userData).await()
-            println("User data saved to database: ${userData.username}")
+
+            // Retrieve the existing user data from the database
+            val snapshot = userRef.get().await()
+            val storedUserData = snapshot.getValue(UserData::class.java)
+
+            // Check if the stored data matches the current data
+            if (storedUserData == null ||
+                storedUserData.username != userData.username ||
+                storedUserData.profilePictureUrl != userData.profilePictureUrl) {
+
+                // Data has changed, update the database
+                userRef.setValue(userData).await()
+                println("User data saved to database: ${userData.username}")
+            } else {
+                println("User data is already up-to-date.")
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error saving user data to database: ${e.message}")
         }
     }
+
 }

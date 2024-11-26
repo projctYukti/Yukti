@@ -71,7 +71,7 @@ fun DrawerBody(
     items: List<NavDrawerItems>,
     modifier: Modifier = Modifier,
     itemTextStyle : TextStyle = TextStyle(fontSize =  18.sp),
-    onItemClick: (NavDrawerItems) -> Unit
+    onItemClick:   (NavDrawerItems) -> Unit
 
 ){
     LazyColumn(modifier){
