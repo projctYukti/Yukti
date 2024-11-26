@@ -36,6 +36,9 @@ fun SubscriptionPage(navController: NavHostController) {
                     IconButton(onClick = {
                         navController.navigate(Routes.chat){
                             popUpTo(navController.graph.startDestinationId)
+                            {
+                                inclusive = true
+                            }
                         }
 
                         }) {
