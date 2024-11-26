@@ -37,6 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.yukti.MainActivity
 
 
@@ -44,6 +46,9 @@ import com.example.yukti.chat.components.ChatHeader
 import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
+import com.example.yukti.createbusiness.SubscriptionActivity
+import com.example.yukti.createbusiness.SubscriptionPage
+import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.ui.theme.ColorModelMessage
@@ -53,11 +58,19 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 @Composable
-fun ChatPage(chatViewModel: ChatViewModel,googleAuthUiClient : GoogleAuthUiClient
+fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClient
+             ,navController: NavHostController
+
              ) {
 
+    val sharedViewModel: SharedViewModel = viewModel() // Using ViewModelProvider
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+//
+//// Store the drawerState and scope in the ViewModel
+//    sharedViewModel.drawerState = drawerState
+//    sharedViewModel.scope = scope
+
 
     val errorState by chatViewModel.errorState.collectAsState()
     val context = LocalContext.current
@@ -76,6 +89,7 @@ fun ChatPage(chatViewModel: ChatViewModel,googleAuthUiClient : GoogleAuthUiClien
                 Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
 
                 // Kill the current activity and navigate to GoogleAuthUiClient (login activity)
+
                 val intent = Intent(context, MainActivity::class.java)
                 context.startActivity(intent)
                 (context as? Activity)?.finish()
@@ -121,14 +135,29 @@ fun ChatPage(chatViewModel: ChatViewModel,googleAuthUiClient : GoogleAuthUiClien
                 modifier = Modifier
                 .fillMaxHeight()
                 .background(Color.Gray) // Optional semi-transparent background
+
             ) {
             DrawerHeader()
 
             DrawerBody(
                 items = navItems,
                 onItemClick = { item ->
-                    Toast.makeText(context, "Clicked: ${item.title}", Toast.LENGTH_SHORT).show()
-                    scope.launch { drawerState.close() } // Close the drawer after item selection.
+
+                    when (item.title) {
+                        "Create a business" -> {
+                            navController.navigate(Routes.subscriptionPage){
+                                popUpTo(navController.graph.startDestinationId)
+                            }
+
+                        }"Join a business" -> {
+                        navController.navigate(Routes.subscriptionPage)
+
+                    }
+                        else -> {
+                            Toast.makeText(context, "Clicked: ${item.title}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
                 }
             )
         }}
