@@ -40,7 +40,7 @@ fun JoinBusinessPage(navController: NavHostController, userId: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(25.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -68,27 +68,76 @@ fun JoinBusinessPage(navController: NavHostController, userId: String) {
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 if (snapshot.exists()) {
-                                    val businessId = snapshot.children.first().key ?: return
+                                    val business = snapshot.children.firstOrNull()
+                                    val businessId = business?.key
 
-                                    // Add user as a member
-                                    val membersRef = businessesRef.child(businessId).child("members")
-                                    membersRef.child(userId).setValue(true)
-                                        .addOnSuccessListener {
+                                    // Log businessId for debugging
+                                    println("Business ID: $businessId")
+
+                                    val maxMembers = business?.child("numberOfPeople")?.getValue(Int::class.java) ?: 0
+                                    val currentMembers = business?.child("members")?.childrenCount?.toInt() ?: 0
+
+                                    // Check if `businessId` and `userId` are valid
+                                    if (businessId != null && userId.isNotEmpty()) {
+                                        val membersRef = businessesRef.child(businessId).child("members")
+
+                                        // Check if the user is already a member
+                                        membersRef.child(userId).get().addOnSuccessListener { memberSnapshot ->
+                                            if (memberSnapshot.exists()) {
+                                                // User is already a member
+                                                Toast.makeText(
+                                                    context,
+                                                    "You are already a member of this business.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                isLoading = false
+                                            } else {
+                                                // Check if the business is full
+                                                if (currentMembers < maxMembers) {
+                                                    // Add user as a member
+                                                    membersRef.child(userId).setValue(true)
+                                                        .addOnSuccessListener {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Successfully joined the business!",
+                                                                Toast.LENGTH_LONG
+                                                            ).show()
+                                                            navController.navigate(Routes.chat)
+                                                        }
+                                                        .addOnFailureListener {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Failed to join: ${it.message}",
+                                                                Toast.LENGTH_LONG
+                                                            ).show()
+                                                        }
+                                                        .addOnCompleteListener { isLoading = false }
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "The business is already full.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    isLoading = false
+                                                }
+                                            }
+                                        }.addOnFailureListener {
+                                            // Handle potential errors when reading the members node
                                             Toast.makeText(
                                                 context,
-                                                "Successfully joined the business!",
+                                                "Failed to check membership: ${it.message}",
                                                 Toast.LENGTH_LONG
                                             ).show()
-                                            navController.navigate(Routes.chat)
+                                            isLoading = false
                                         }
-                                        .addOnFailureListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Failed to join: ${it.message}",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                        .addOnCompleteListener { isLoading = false }
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Invalid business ID or user ID.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        isLoading = false
+                                    }
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -117,5 +166,8 @@ fun JoinBusinessPage(navController: NavHostController, userId: String) {
         ) {
             Text(if (isLoading) "Joining..." else "Join Business")
         }
+
+
+
     }
 }

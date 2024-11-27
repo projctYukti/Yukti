@@ -44,7 +44,7 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(25.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
