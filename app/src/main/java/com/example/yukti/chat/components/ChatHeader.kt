@@ -26,6 +26,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yukti.chat.components.menu.NavDrawerItems
+import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.businessName
+import com.example.yukti.subscription.SubscriptionCache.isSubscribed
 import com.example.yukti.subscription.SubscriptionChecker
 
 import com.example.yukti.subscription.SubscriptionViewModel
@@ -46,8 +49,7 @@ fun ChatHeader(onSignOut: () -> Job,
         var expanded by remember { mutableStateOf(false) }
         var headerText by remember { mutableStateOf("Chat") } // Default header text
 
-        val context = LocalContext.current
-        val subscriptionChecker = SubscriptionChecker(context)
+
 
 
 
@@ -66,17 +68,14 @@ fun ChatHeader(onSignOut: () -> Job,
            },
            title = {
 
-               LaunchedEffect(Unit) {
-                   val (isSubscribed, businessName) = subscriptionChecker.checkSubscription()
-                   if (isSubscribed) {
-                       headerText = businessName.toString()
+               if (isSubscribed){
+                   headerText = businessName.toString()
+               }else{
 
-                       Toast.makeText(context, "Welcome to $businessName!", Toast.LENGTH_SHORT).show()
-                   } else {
-                       headerText = "Chat"
-
-                   }
+                   headerText = "Chat"
                }
+
+
 
 
 
@@ -101,6 +100,10 @@ fun ChatHeader(onSignOut: () -> Job,
                        onClick = {
                            expanded = false
                            onSignOut()
+                           fun reset() {
+                               isSubscribed = false
+                               businessName = null
+                           }
                        }
                    )
                }
