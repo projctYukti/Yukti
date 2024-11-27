@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yukti.chat.components.menu.NavDrawerItems
 import com.example.yukti.subscription.SubscriptionCache
 import com.example.yukti.subscription.SubscriptionCache.businessName
+import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionCache.isSubscribed
 import com.example.yukti.subscription.SubscriptionChecker
 
@@ -69,7 +70,7 @@ fun ChatHeader(onSignOut: () -> Job,
            title = {
 
                if (isSubscribed){
-                   headerText = businessName.toString()
+                   headerText = getSubscriptionDetails(LocalContext.current).second.toString()
                }else{
 
                    headerText = "Chat"

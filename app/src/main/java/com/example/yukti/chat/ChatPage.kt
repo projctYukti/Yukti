@@ -49,7 +49,10 @@ import com.example.yukti.chat.components.menu.NavDrawerItems
 import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.clearSubscriptionDetails
+import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionCache.isSubscribed
+import com.example.yukti.subscription.SubscriptionCache.saveSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionChecker
 import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.ui.theme.ColorModelMessage
@@ -67,7 +70,7 @@ fun ChatPage(
     val context = LocalContext.current
     val subscriptionChecker = SubscriptionChecker(context)
     val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
-    val businessName = subscriptionViewModel.businessName.value
+    var businessName = subscriptionViewModel.businessName.value
 
 
     LaunchedEffect(Unit) {
@@ -84,6 +87,7 @@ fun ChatPage(
         SubscriptionCache.businessName = businessName
         subscriptionViewModel.setBusinessName(businessName.toString()) // Make sure it's set properly
         Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessName}")
+        saveSubscriptionDetails(context, isSubscribed, businessName)
     }
 
 
@@ -120,6 +124,7 @@ fun ChatPage(
                 val intent = Intent(context, MainActivity::class.java)
                 context.startActivity(intent)
                 (context as? Activity)?.finish()
+                clearSubscriptionDetails(context)
 
                 // Finish the current activity to prevent going back to it after sign-out
 
@@ -139,52 +144,69 @@ fun ChatPage(
             chatViewModel._errorState.value = null
         }
     }
+    LaunchedEffect(drawerState.isOpen) {
+        if (drawerState.isOpen) {
 
 
-    val navItems = if (isSubscribed) {
-        Log.d("ChatPage", "isSubscribed3: $isSubscribed")
-        listOf(
-            NavDrawerItems(
-                businessName.toString(),
-                businessName.toString(),
-                "Go to Manage business page",
-                icon = Icons.Default.Business
-            ),
-            NavDrawerItems(
-                "Business Members",
-                "Business Members",
-                "View Member List",
-                icon = Icons.Default.AccountCircle
-            ),
-            NavDrawerItems(
-                "Create a Business",
-                "Create a Business",
-                "Go to Create a Business page",
-                icon = Icons.Default.Create
-            ),
-            NavDrawerItems(
-                "Join a Business",
-                "Join a Business",
-                "Go to Join a Business page",
-                icon = Icons.Default.AddCircle
+
+            // Trigger specific actions when the drawer opens
+            Log.d("Drawer", "Drawer opened")
+            // You can add any specific actions here, like refreshing data
+        } else {
+            // Trigger actions when the drawer is closed
+            Log.d("Drawer", "Drawer closed")
+        }
+    }
+
+
+    // Retaining navItems based on subscription status
+    val navItems = remember(getSubscriptionDetails(context)
+
+    ) {
+        Log.d("items",getSubscriptionDetails(context).toString())
+        if (getSubscriptionDetails(context).first) {
+            listOf(
+                NavDrawerItems(
+                    getSubscriptionDetails(context).second.toString(), // Use `orEmpty` to avoid null value
+                    getSubscriptionDetails(context).second.toString(),
+                    "Go to Manage business page",
+                    icon = Icons.Default.Business
+                ),
+                NavDrawerItems(
+                    "Business Members",
+                    "Business Members",
+                    "View Member List",
+                    icon = Icons.Default.AccountCircle
+                ),
+                NavDrawerItems(
+                    "Create a Business",
+                    "Create a Business",
+                    "Go to Create a Business page",
+                    icon = Icons.Default.Create
+                ),
+                NavDrawerItems(
+                    "Join a Business",
+                    "Join a Business",
+                    "Go to Join a Business page",
+                    icon = Icons.Default.AddCircle
+                )
             )
-        )
-    } else {
-        Log.d("ChatPage", "isSubscribed4: $isSubscribed")
-        listOf(
-            NavDrawerItems(
-                "Create a Business",
-                "Create a Business",
-                "Go to Create a Business page",
-                icon = Icons.Default.Create
-            ),
-            NavDrawerItems(
-                "Join a Business",
-                "Join a Business",
-                "Go to Join a Business page",
-                icon = Icons.Default.AddCircle
+        } else {
+            listOf(
+                NavDrawerItems(
+                    "Create a Business",
+                    "Create a Business",
+                    "Go to Create a Business page",
+                    icon = Icons.Default.Create
+                ),
+                NavDrawerItems(
+                    "Join a Business",
+                    "Join a Business",
+                    "Go to Join a Business page",
+                    icon = Icons.Default.AddCircle
+                )
             )
-        )
+        }
     }
 
 
@@ -205,16 +227,17 @@ fun ChatPage(
                 onItemClick = { item ->
 
                     when (item.title) {
-                        "Create a business" -> {
+                        "Create a Business" -> {
                             navController.navigate(Routes.subscriptionPage){
                                 popUpTo(navController.graph.startDestinationId)
                             }
 
-                        }"Join a business" -> {
+                        }"Join a Business" -> {
                         navController.navigate(Routes.joinBusiness)
 
                     }
                         else -> {
+                            Log.d("items",item.title)
                             Toast.makeText(context, "Clicked: ${item.title}", Toast.LENGTH_SHORT).show()
                         }
                     }
