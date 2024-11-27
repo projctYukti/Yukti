@@ -18,10 +18,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.yukti.chat.ChatPage
+import com.example.yukti.createbusiness.BusinessSetupPage
 import com.example.yukti.createbusiness.SubscriptionPage
+import com.example.yukti.createbusiness.joinbusiness.JoinBusinessPage
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.sign_in.SignInViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,6 +36,8 @@ fun AppNavigation(
 ) {
 
     val corutineScope = rememberCoroutineScope()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
 
     // Navigation controller
     val navController = rememberNavController()
@@ -103,6 +108,13 @@ fun AppNavigation(
         composable(Routes.subscriptionPage) {
             SubscriptionPage(navController)
         }
+        composable(Routes.businessSetup) {
+            BusinessSetupPage(navController, userId.toString())
+        }
+        composable(Routes.joinBusiness) {
+            JoinBusinessPage(navController = navController, userId = userId.toString())
+        }
+
     }
 
 }

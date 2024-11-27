@@ -46,7 +46,6 @@ import com.example.yukti.chat.components.ChatHeader
 import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
-import com.example.yukti.createbusiness.SubscriptionActivity
 import com.example.yukti.createbusiness.SubscriptionPage
 import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
@@ -150,7 +149,7 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
                             }
 
                         }"Join a business" -> {
-                        navController.navigate(Routes.subscriptionPage)
+                        navController.navigate(Routes.joinBusiness)
 
                     }
                         else -> {
@@ -158,6 +157,9 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
                         }
                     }
 
+                    scope.launch{
+                        drawerState.close()
+                    }
                 }
             )
         }}
