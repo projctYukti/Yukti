@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +23,8 @@ import com.example.yukti.createbusiness.joinbusiness.JoinBusinessPage
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.sign_in.SignInViewModel
+
+import com.example.yukti.subscription.SubscriptionViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -71,7 +72,7 @@ fun AppNavigation(
                         "Sign in successful",
                         Toast.LENGTH_LONG
                     ).show()
-                    navController.navigate("chat") {
+                    navController.navigate(Routes.chat) {
                         popUpTo("sign_in") { inclusive = true }
                     }
                 }
@@ -114,6 +115,7 @@ fun AppNavigation(
         composable(Routes.joinBusiness) {
             JoinBusinessPage(navController = navController, userId = userId.toString())
         }
+
 
     }
 

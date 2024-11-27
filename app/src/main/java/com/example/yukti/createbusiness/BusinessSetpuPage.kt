@@ -84,6 +84,7 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
 
                         isLoading = true
 
+                        // Generate a unique code for the business
                         generateUniqueCode(businessesRef) { generatedCode ->
                             val businessId = businessesRef.push().key ?: return@generateUniqueCode
                             val businessData = mapOf(
@@ -94,23 +95,29 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
                                 "members" to mapOf(userId to true) // Nested map for members
                             )
 
-
-                            // Save to Firebase
+                            // Save business data to Firebase
                             businessesRef.child(businessId).setValue(businessData)
                                 .addOnSuccessListener {
-                                    Toast.makeText(
-                                        context,
-                                        "Business setup successful!",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                    navController.navigate(Routes.chat)
+                                    // Update user subscription details in the "users" node
+                                    val userRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
+                                    val userData = mapOf(
+                                        "isSubscribed" to true, // Set subscription status to true
+                                        "businessId" to mapOf(businessId to true) // Associate the user with the business
+                                    )
+                                    userRef.updateChildren(userData)
+                                        .addOnSuccessListener {
+                                            // After updating user data, show success message and navigate
+                                            Toast.makeText(context, "Business setup successful and subscription updated!", Toast.LENGTH_LONG).show()
+                                            navController.navigate(Routes.chat)
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(context, "Failed to update user subscription: ${it.message}", Toast.LENGTH_LONG).show()
+                                        }
+
+                                    // Optionally, you can also navigate to another screen
                                 }
                                 .addOnFailureListener {
-                                    Toast.makeText(
-                                        context,
-                                        "Error: ${it.message}",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_LONG).show()
                                 }
                                 .addOnCompleteListener { isLoading = false }
                         }
@@ -126,6 +133,7 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
         ) {
             Text(if (isLoading) "Saving..." else "Save and Continue")
         }
+
     }
 }
 
