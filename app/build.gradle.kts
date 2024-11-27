@@ -1,3 +1,4 @@
+import com.google.gson.Gson
 import org.gradle.kotlin.dsl.libs
 
 plugins {
@@ -17,8 +18,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 23
-        versionName = "5.0.3"
+        versionCode = 24
+        versionName = "5.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,6 +52,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation (libs.androidx.material.icons.extended)
     implementation ("androidx.compose.material3:material3:1.3.1")
+    implementation ("com.google.code.gson:gson:2.10.1")
 
 
     implementation(libs.generativeai)

@@ -3,8 +3,10 @@ package com.example.yukti.subscription
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class SubscriptionViewModel : ViewModel() {
     private val _isSubscribed = MutableStateFlow(false)
@@ -22,4 +24,12 @@ class SubscriptionViewModel : ViewModel() {
     fun setBusinessName(businessName: String) {
         _businessName.value = businessName
     }
+    fun fetchSubscriptionStatus(subscriptionChecker: SubscriptionChecker) {
+        viewModelScope.launch {
+            val (isSubscribed, businessName) = subscriptionChecker.checkSubscription()
+            setSubscriptionStatus(isSubscribed)
+            setBusinessName(businessName.toString())
+        }
+    }
+
 }
