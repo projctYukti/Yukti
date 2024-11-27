@@ -2,6 +2,7 @@ package com.example.yukti.chat
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,11 +10,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
@@ -46,22 +46,47 @@ import com.example.yukti.chat.components.ChatHeader
 import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
-import com.example.yukti.createbusiness.SubscriptionPage
 import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
-import com.example.yukti.sign_in.SignInScreen
+import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.isSubscribed
+import com.example.yukti.subscription.SubscriptionChecker
 import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 @Composable
-fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClient
-             ,navController: NavHostController
+fun ChatPage(
+    chatViewModel: ChatViewModel, googleAuthUiClient: GoogleAuthUiClient
+    , navController: NavHostController, subscriptionViewModel: SubscriptionViewModel
 
-             ) {
+) {
+
+    val context = LocalContext.current
+    val subscriptionChecker = SubscriptionChecker(context)
+    val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
+    val businessName = subscriptionViewModel.businessName.value
+
+
+    LaunchedEffect(Unit) {
+        val (isSubscribed, businessName) = subscriptionChecker.checkSubscription()
+        // Check if the values are being fetched correctly
+        Log.d("ChatPage", "Fetched isSubscribed: $isSubscribed, businessName: $businessName")
+
+        // Save to the singleton
+        SubscriptionCache.isSubscribed = isSubscribed
+        subscriptionViewModel.setSubscriptionStatus(isSubscribed) // Ensure this method is called
+        Log.d("ChatPage", "Saved isSubscribed to Cache: ${SubscriptionCache.isSubscribed}")
+
+        // Set business name
+        SubscriptionCache.businessName = businessName
+        subscriptionViewModel.setBusinessName(businessName.toString()) // Make sure it's set properly
+        Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessName}")
+    }
+
+
 
 
 
@@ -75,7 +100,7 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
 
 
     val errorState by chatViewModel.errorState.collectAsState()
-    val context = LocalContext.current
+
 
     val chatId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_chat"
     val onSignOut = rememberCoroutineScope() // Move the rememberCoroutineScope here
@@ -114,21 +139,55 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
             chatViewModel._errorState.value = null
         }
     }
-    val navItems = listOf(
-        NavDrawerItems(
-            "Create a business",
-            "Create a business",
-            "Go to Create a business page",
-            icon = Icons.Default.Create
-        ),
-        NavDrawerItems(
-            "Join a business",
-            "Join a business",
-            "Go to Join a business page",
-            icon = Icons.Default.AddCircle
-        )
 
-    )
+
+    val navItems = if (isSubscribed) {
+        Log.d("ChatPage", "isSubscribed3: $isSubscribed")
+        listOf(
+            NavDrawerItems(
+                businessName.toString(),
+                businessName.toString(),
+                "Go to Manage business page",
+                icon = Icons.Default.Business
+            ),
+            NavDrawerItems(
+                "Business Members",
+                "Business Members",
+                "View Member List",
+                icon = Icons.Default.AccountCircle
+            ),
+            NavDrawerItems(
+                "Create a Business",
+                "Create a Business",
+                "Go to Create a Business page",
+                icon = Icons.Default.Create
+            ),
+            NavDrawerItems(
+                "Join a Business",
+                "Join a Business",
+                "Go to Join a Business page",
+                icon = Icons.Default.AddCircle
+            )
+        )
+    } else {
+        Log.d("ChatPage", "isSubscribed4: $isSubscribed")
+        listOf(
+            NavDrawerItems(
+                "Create a Business",
+                "Create a Business",
+                "Go to Create a Business page",
+                icon = Icons.Default.Create
+            ),
+            NavDrawerItems(
+                "Join a Business",
+                "Join a Business",
+                "Go to Join a Business page",
+                icon = Icons.Default.AddCircle
+            )
+        )
+    }
+
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,

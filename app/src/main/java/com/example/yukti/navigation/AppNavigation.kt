@@ -104,7 +104,9 @@ fun AppNavigation(
 
         // Chat screen
         composable(Routes.chat) {
-            ChatPage(chatViewModel = chatViewModel,googleAuthUiClient = googleAuthUiClient,navController)
+            ChatPage(
+                chatViewModel = chatViewModel, googleAuthUiClient = googleAuthUiClient,navController,
+                subscriptionViewModel = SubscriptionViewModel())
         }
         composable(Routes.subscriptionPage) {
             SubscriptionPage(navController)
