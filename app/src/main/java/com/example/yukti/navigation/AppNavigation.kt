@@ -36,7 +36,8 @@ fun AppNavigation(
 ) {
 
     val corutineScope = rememberCoroutineScope()
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
 
     // Navigation controller
     val navController = rememberNavController()
