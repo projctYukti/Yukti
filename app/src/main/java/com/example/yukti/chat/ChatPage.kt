@@ -50,6 +50,7 @@ import com.example.yukti.createbusiness.SubscriptionPage
 import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
+import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
@@ -61,6 +62,8 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
              ,navController: NavHostController
 
              ) {
+
+
 
     val sharedViewModel: SharedViewModel = viewModel() // Using ViewModelProvider
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
