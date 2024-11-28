@@ -87,7 +87,7 @@ fun ChatPage(
         SubscriptionCache.businessName = businessName
         subscriptionViewModel.setBusinessName(businessName.toString()) // Make sure it's set properly
         Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessName}")
-        saveSubscriptionDetails(context, isSubscribed, businessName)
+
     }
 
 
@@ -178,18 +178,7 @@ fun ChatPage(
                     "View Member List",
                     icon = Icons.Default.AccountCircle
                 ),
-                NavDrawerItems(
-                    "Create a Business",
-                    "Create a Business",
-                    "Go to Create a Business page",
-                    icon = Icons.Default.Create
-                ),
-                NavDrawerItems(
-                    "Join a Business",
-                    "Join a Business",
-                    "Go to Join a Business page",
-                    icon = Icons.Default.AddCircle
-                )
+
             )
         } else {
             listOf(
@@ -227,6 +216,11 @@ fun ChatPage(
                 onItemClick = { item ->
 
                     when (item.title) {
+
+                        "Business Members"->{
+                            navController.navigate(Routes.businessMembers){
+                                popUpTo(navController.graph.startDestinationId)
+                            }}
                         "Create a Business" -> {
                             navController.navigate(Routes.subscriptionPage){
                                 popUpTo(navController.graph.startDestinationId)

@@ -53,6 +53,11 @@ dependencies {
     implementation (libs.androidx.material.icons.extended)
     implementation ("androidx.compose.material3:material3:1.3.1")
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("com.google.firebase:firebase-bom:32.2.3")
+    implementation ("com.google.firebase:firebase-auth")
+    implementation ("com.google.firebase:firebase-messaging")
+    implementation ("com.google.firebase:firebase-database")
+
 
 
     implementation(libs.generativeai)
@@ -81,6 +86,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.inappmessaging.display)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -36,6 +36,7 @@ class SubscriptionChecker(private val context: Context) {
                     Log.d(tag, "Businesses field: $businesses")
 
                     val businessId = businesses?.keys?.firstOrNull() ?: ""
+
                     Log.d(tag, "Business ID: $businessId")
 
                     if (businessId.isNotBlank()) {
@@ -47,6 +48,8 @@ class SubscriptionChecker(private val context: Context) {
 
                         val businessName = businessSnapshot.child("businessName").getValue(String::class.java)
                         Log.d(tag, "Business name: $businessName")
+
+                        SubscriptionCache.saveSubscriptionDetails(context, isSubscribed, businessName,businessId)
 
                         return Pair(true, businessName)
                     } else {

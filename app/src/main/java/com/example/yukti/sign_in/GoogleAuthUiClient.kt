@@ -10,7 +10,11 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.example.yukti.R
+import com.example.yukti.firebasecloudmessaging.FCMHelper
 import com.google.firebase.database.ktx.database
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.ktx.messaging
+import com.google.firebase.messaging.remoteMessage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 
@@ -18,6 +22,8 @@ class GoogleAuthUiClient(
     private val context: Context,
     private val oneTapClient: SignInClient
 ) {
+
+
     private val auth = Firebase.auth
     private val database = Firebase.database.reference // Firebase Database reference
 
@@ -51,7 +57,7 @@ class GoogleAuthUiClient(
             val user = auth.signInWithCredential(googleCredentials).await().user
 
             val userData = user?.run {
-                UserData(uid, displayName, photoUrl?.toString())
+                UserData(uid, displayName, photoUrl?.toString(),email, FCMHelper(context).getFCMToken())
             }
 
             if (userData != null) {
@@ -79,11 +85,15 @@ class GoogleAuthUiClient(
         }
     }
 
-    fun getSignedInUser(): UserData? = auth.currentUser?.run {
+  fun getSignedInUser(): UserData? = auth.currentUser?.run {
+
         UserData(
             userId = uid,
             username = displayName,
-            profilePictureUrl = photoUrl?.toString()
+            profilePictureUrl = photoUrl?.toString(),
+            email = email,
+            fcmToken = FCMHelper(context).getFCMToken()
+
         )
     }
 
