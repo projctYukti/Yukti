@@ -27,6 +27,7 @@ materialIconsExtended = "1.7.5"
 navigationCompose = "2.8.4"
 playServicesAuth = "21.2.0"
 ui = "1.7.5"
+firebaseMessaging = "24.1.0"
 
 [libraries]
 
@@ -63,6 +64,7 @@ kotlinx-coroutines-play-services-v161 = { module = "org.jetbrains.kotlinx:kotlin
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

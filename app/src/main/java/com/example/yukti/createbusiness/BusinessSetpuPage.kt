@@ -103,6 +103,7 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
                                     val userData = mapOf(
                                         "isSubscribed" to true, // Set subscription status to true
                                         "businessId" to mapOf(businessId to true) // Associate the user with the business
+
                                     )
                                     userRef.updateChildren(userData)
                                         .addOnSuccessListener {
