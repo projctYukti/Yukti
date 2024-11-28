@@ -42,9 +42,11 @@ fun businessMembers(navController: NavHostController) {
         }
     } else {
         LazyColumn(
+
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+
         ) {
             items(members) { member ->
                 MemberItem(member)
@@ -58,7 +60,7 @@ fun MemberItem(member: Members) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 20.dp),
+            .padding(top = 30.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
