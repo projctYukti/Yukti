@@ -74,7 +74,7 @@ fun ChatPage(
 
 
     LaunchedEffect(Unit) {
-        val (isSubscribed, businessName) = subscriptionChecker.checkSubscription()
+        val (isSubscribed, businessName , businessId ) = subscriptionChecker.checkSubscription()
         // Check if the values are being fetched correctly
         Log.d("ChatPage", "Fetched isSubscribed: $isSubscribed, businessName: $businessName")
 
@@ -87,6 +87,10 @@ fun ChatPage(
         SubscriptionCache.businessName = businessName
         subscriptionViewModel.setBusinessName(businessName.toString()) // Make sure it's set properly
         Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessName}")
+
+        SubscriptionCache.businessId = businessId
+        subscriptionViewModel.setBusinessId(businessId.toString()) // Make sure it's set properly
+        Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessId}")
 
     }
 
@@ -180,7 +184,27 @@ fun ChatPage(
                 ),
 
             )
-        } else {
+        }
+        else if (getSubscriptionDetails(context).first == false && getSubscriptionDetails(context).second != null){
+
+            listOf(
+                NavDrawerItems(
+                    getSubscriptionDetails(context).second.toString(), // Use `orEmpty` to avoid null value
+                    getSubscriptionDetails(context).second.toString(),
+                    "Go to Manage business page",
+                    icon = Icons.Default.Business
+                ),
+                NavDrawerItems(
+                    "Business Members",
+                    "Business Members",
+                    "View Member List",
+                    icon = Icons.Default.AccountCircle
+                ),
+
+                )
+        }
+
+        else {
             listOf(
                 NavDrawerItems(
                     "Create a Business",

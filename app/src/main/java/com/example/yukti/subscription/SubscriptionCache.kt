@@ -6,6 +6,7 @@ import com.google.gson.Gson
 object SubscriptionCache {
     var isSubscribed: Boolean = false
     var businessName: String? = null
+    var businessId: String? = null
 
     fun reset() {
         isSubscribed = false

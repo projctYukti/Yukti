@@ -63,6 +63,8 @@ fun JoinBusinessPage(navController: NavHostController, userId: String) {
                 if (uniqueCode.isNotBlank()) {
                     isLoading = true
 
+                    val usersRef = FirebaseDatabase.getInstance().getReference("users")
+
                     // Search for the business by unique code
                     businessesRef.orderByChild("uniqueCode").equalTo(uniqueCode)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -97,12 +99,39 @@ fun JoinBusinessPage(navController: NavHostController, userId: String) {
                                                     // Add user as a member
                                                     membersRef.child(userId).setValue(true)
                                                         .addOnSuccessListener {
-                                                            Toast.makeText(
-                                                                context,
-                                                                "Successfully joined the business!",
-                                                                Toast.LENGTH_LONG
-                                                            ).show()
-                                                            navController.navigate(Routes.chat)
+                                                            // Add the businessId to the user's `businesses` node
+                                                            usersRef.child(userId).apply {
+                                                                // Update businesses node
+                                                                child("businessId").child(businessId).setValue(true)
+                                                                    .addOnSuccessListener {
+                                                                        // Update isSubscribed field
+                                                                        child("isSubscribed").setValue(false)
+                                                                            .addOnSuccessListener {
+                                                                                Toast.makeText(
+                                                                                    context,
+                                                                                    "Successfully joined the business!",
+                                                                                    Toast.LENGTH_LONG
+                                                                                ).show()
+                                                                                navController.navigate(Routes.chat)
+                                                                            }
+                                                                            .addOnFailureListener {
+                                                                                Toast.makeText(
+                                                                                    context,
+                                                                                    "Failed to update subscription status: ${it.message}",
+                                                                                    Toast.LENGTH_LONG
+                                                                                ).show()
+                                                                            }
+                                                                    }
+                                                                    .addOnFailureListener {
+                                                                        Toast.makeText(
+                                                                            context,
+                                                                            "Failed to update user node: ${it.message}",
+                                                                            Toast.LENGTH_LONG
+                                                                        ).show()
+                                                                    }
+                                                                    .addOnCompleteListener { isLoading = false }
+                                                            }
+
                                                         }
                                                         .addOnFailureListener {
                                                             Toast.makeText(
@@ -166,6 +195,7 @@ fun JoinBusinessPage(navController: NavHostController, userId: String) {
         ) {
             Text(if (isLoading) "Joining..." else "Join Business")
         }
+
 
 
 
