@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,10 +19,15 @@ import androidx.navigation.compose.rememberNavController
 import com.example.yukti.chat.ChatPage
 import com.example.yukti.createbusiness.BusinessSetupPage
 import com.example.yukti.createbusiness.SubscriptionPage
+import com.example.yukti.createbusiness.businessMembers
+
 import com.example.yukti.createbusiness.joinbusiness.JoinBusinessPage
+import com.example.yukti.navigation.Routes.businessMembers
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.sign_in.SignInViewModel
+
+import com.example.yukti.subscription.SubscriptionViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -71,7 +75,7 @@ fun AppNavigation(
                         "Sign in successful",
                         Toast.LENGTH_LONG
                     ).show()
-                    navController.navigate("chat") {
+                    navController.navigate(Routes.chat) {
                         popUpTo("sign_in") { inclusive = true }
                     }
                 }
@@ -103,7 +107,9 @@ fun AppNavigation(
 
         // Chat screen
         composable(Routes.chat) {
-            ChatPage(chatViewModel = chatViewModel,googleAuthUiClient = googleAuthUiClient,navController)
+            ChatPage(
+                chatViewModel = chatViewModel, googleAuthUiClient = googleAuthUiClient,navController,
+                subscriptionViewModel = SubscriptionViewModel())
         }
         composable(Routes.subscriptionPage) {
             SubscriptionPage(navController)
@@ -114,6 +120,10 @@ fun AppNavigation(
         composable(Routes.joinBusiness) {
             JoinBusinessPage(navController = navController, userId = userId.toString())
         }
+        composable(Routes.businessMembers) {
+            businessMembers(navController = navController)
+        }
+
 
     }
 

@@ -1,3 +1,4 @@
+import com.google.gson.Gson
 import org.gradle.kotlin.dsl.libs
 
 plugins {
@@ -17,8 +18,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 21
-        versionName = "5.0.1"
+        versionCode = 24
+        versionName = "5.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,6 +52,12 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation (libs.androidx.material.icons.extended)
     implementation ("androidx.compose.material3:material3:1.3.1")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("com.google.firebase:firebase-bom:32.2.3")
+    implementation ("com.google.firebase:firebase-auth")
+    implementation ("com.google.firebase:firebase-messaging")
+    implementation ("com.google.firebase:firebase-database")
+
 
 
     implementation(libs.generativeai)
@@ -79,6 +86,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.inappmessaging.display)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

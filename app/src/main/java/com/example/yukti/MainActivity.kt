@@ -19,6 +19,7 @@ import com.example.learningcompose.update.ShowUpdateDialog
 import com.example.learningcompose.update.UpdateChecker
 
 import com.example.yukti.navigation.AppNavigation
+import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.ui.theme.YuktiTheme
 import com.google.android.gms.auth.api.identity.Identity
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
         // Determine the start destination based on login status
         val startDestination = if (googleAuthUiClient.getSignedInUser() != null) {
-            "chat"
+            Routes.chat
         } else {
             "sign_in"
         }

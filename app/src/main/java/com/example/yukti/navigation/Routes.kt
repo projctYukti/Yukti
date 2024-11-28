@@ -6,4 +6,7 @@ object Routes {
     var subscriptionPage = "subscription_page"
     const val businessSetup = "businessSetup"
     const val joinBusiness = "joinBusiness"
+    const val CheckSubscription = "CheckSubscription"
+    const val manageBusiness = "manageBusiness"
+    const val businessMembers = "businessMembers"
 }

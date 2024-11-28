@@ -2,6 +2,7 @@ package com.example.yukti.chat
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,11 +10,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
@@ -46,21 +46,53 @@ import com.example.yukti.chat.components.ChatHeader
 import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
-import com.example.yukti.createbusiness.SubscriptionPage
 import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
-import com.example.yukti.sign_in.SignInScreen
+import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.clearSubscriptionDetails
+import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
+import com.example.yukti.subscription.SubscriptionCache.isSubscribed
+import com.example.yukti.subscription.SubscriptionCache.saveSubscriptionDetails
+import com.example.yukti.subscription.SubscriptionChecker
+import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 @Composable
-fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClient
-             ,navController: NavHostController
+fun ChatPage(
+    chatViewModel: ChatViewModel, googleAuthUiClient: GoogleAuthUiClient
+    , navController: NavHostController, subscriptionViewModel: SubscriptionViewModel
 
-             ) {
+) {
+
+    val context = LocalContext.current
+    val subscriptionChecker = SubscriptionChecker(context)
+    val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
+    var businessName = subscriptionViewModel.businessName.value
+
+
+    LaunchedEffect(Unit) {
+        val (isSubscribed, businessName) = subscriptionChecker.checkSubscription()
+        // Check if the values are being fetched correctly
+        Log.d("ChatPage", "Fetched isSubscribed: $isSubscribed, businessName: $businessName")
+
+        // Save to the singleton
+        SubscriptionCache.isSubscribed = isSubscribed
+        subscriptionViewModel.setSubscriptionStatus(isSubscribed) // Ensure this method is called
+        Log.d("ChatPage", "Saved isSubscribed to Cache: ${SubscriptionCache.isSubscribed}")
+
+        // Set business name
+        SubscriptionCache.businessName = businessName
+        subscriptionViewModel.setBusinessName(businessName.toString()) // Make sure it's set properly
+        Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessName}")
+
+    }
+
+
+
+
 
     val sharedViewModel: SharedViewModel = viewModel() // Using ViewModelProvider
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -72,7 +104,7 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
 
 
     val errorState by chatViewModel.errorState.collectAsState()
-    val context = LocalContext.current
+
 
     val chatId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_chat"
     val onSignOut = rememberCoroutineScope() // Move the rememberCoroutineScope here
@@ -92,6 +124,7 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
                 val intent = Intent(context, MainActivity::class.java)
                 context.startActivity(intent)
                 (context as? Activity)?.finish()
+                clearSubscriptionDetails(context)
 
                 // Finish the current activity to prevent going back to it after sign-out
 
@@ -111,21 +144,61 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
             chatViewModel._errorState.value = null
         }
     }
-    val navItems = listOf(
-        NavDrawerItems(
-            "Create a business",
-            "Create a business",
-            "Go to Create a business page",
-            icon = Icons.Default.Create
-        ),
-        NavDrawerItems(
-            "Join a business",
-            "Join a business",
-            "Go to Join a business page",
-            icon = Icons.Default.AddCircle
-        )
+    LaunchedEffect(drawerState.isOpen) {
+        if (drawerState.isOpen) {
 
-    )
+
+
+            // Trigger specific actions when the drawer opens
+            Log.d("Drawer", "Drawer opened")
+            // You can add any specific actions here, like refreshing data
+        } else {
+            // Trigger actions when the drawer is closed
+            Log.d("Drawer", "Drawer closed")
+        }
+    }
+
+
+    // Retaining navItems based on subscription status
+    val navItems = remember(getSubscriptionDetails(context)
+
+    ) {
+        Log.d("items",getSubscriptionDetails(context).toString())
+        if (getSubscriptionDetails(context).first) {
+            listOf(
+                NavDrawerItems(
+                    getSubscriptionDetails(context).second.toString(), // Use `orEmpty` to avoid null value
+                    getSubscriptionDetails(context).second.toString(),
+                    "Go to Manage business page",
+                    icon = Icons.Default.Business
+                ),
+                NavDrawerItems(
+                    "Business Members",
+                    "Business Members",
+                    "View Member List",
+                    icon = Icons.Default.AccountCircle
+                ),
+
+            )
+        } else {
+            listOf(
+                NavDrawerItems(
+                    "Create a Business",
+                    "Create a Business",
+                    "Go to Create a Business page",
+                    icon = Icons.Default.Create
+                ),
+                NavDrawerItems(
+                    "Join a Business",
+                    "Join a Business",
+                    "Go to Join a Business page",
+                    icon = Icons.Default.AddCircle
+                )
+            )
+        }
+    }
+
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -143,16 +216,22 @@ fun ChatPage(chatViewModel: ChatViewModel, googleAuthUiClient : GoogleAuthUiClie
                 onItemClick = { item ->
 
                     when (item.title) {
-                        "Create a business" -> {
+
+                        "Business Members"->{
+                            navController.navigate(Routes.businessMembers){
+                                popUpTo(navController.graph.startDestinationId)
+                            }}
+                        "Create a Business" -> {
                             navController.navigate(Routes.subscriptionPage){
                                 popUpTo(navController.graph.startDestinationId)
                             }
 
-                        }"Join a business" -> {
+                        }"Join a Business" -> {
                         navController.navigate(Routes.joinBusiness)
 
                     }
                         else -> {
+                            Log.d("items",item.title)
                             Toast.makeText(context, "Clicked: ${item.title}", Toast.LENGTH_SHORT).show()
                         }
                     }

@@ -1,6 +1,7 @@
 package com.example.yukti.chat.components
 
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -14,14 +15,24 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yukti.chat.components.menu.NavDrawerItems
+import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.businessName
+import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
+import com.example.yukti.subscription.SubscriptionCache.isSubscribed
+import com.example.yukti.subscription.SubscriptionChecker
+
+import com.example.yukti.subscription.SubscriptionViewModel
 import kotlinx.coroutines.Job
 
 
@@ -35,7 +46,15 @@ fun ChatHeader(onSignOut: () -> Job,
 
 
     ) {
-        // Top Bar
+
+        var expanded by remember { mutableStateOf(false) }
+        var headerText by remember { mutableStateOf("Chat") } // Default header text
+
+
+
+
+
+
        TopAppBar(
            modifier = Modifier.fillMaxWidth(),
 //           colors = TopAppBarDefaults.topAppBarColors(
@@ -48,9 +67,26 @@ fun ChatHeader(onSignOut: () -> Job,
                    Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
                }
            },
-           title = { Text("Chat",
-               textAlign = TextAlign.Center,
-               modifier = Modifier.fillMaxWidth()) },
+           title = {
+
+               if (isSubscribed){
+                   headerText = getSubscriptionDetails(LocalContext.current).second.toString()
+               }else{
+
+                   headerText = "Chat"
+               }
+
+
+
+
+
+                   // Show something else for non-subscribed users
+                   Text(headerText,
+                       textAlign = TextAlign.Center,
+                       modifier = Modifier.fillMaxWidth())
+
+
+                },
            actions = {
                IconButton(onClick = { expanded = !expanded }) {
                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
@@ -65,6 +101,10 @@ fun ChatHeader(onSignOut: () -> Job,
                        onClick = {
                            expanded = false
                            onSignOut()
+                           fun reset() {
+                               isSubscribed = false
+                               businessName = null
+                           }
                        }
                    )
                }
