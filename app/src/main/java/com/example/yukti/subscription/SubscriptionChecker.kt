@@ -17,7 +17,7 @@ import kotlinx.coroutines.tasks.await
 class SubscriptionChecker(private val context: Context) {
     private val userId: String = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-    suspend fun checkSubscription(): Pair<Boolean, String?> {
+    suspend fun checkSubscription(): Triple<Boolean, String?, String?> {
         val tag = "SubscriptionChecker" // Tag for logs
         return try {
             val userRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
@@ -30,16 +30,13 @@ class SubscriptionChecker(private val context: Context) {
                 val isSubscribed = snapshot.child("isSubscribed").getValue(Boolean::class.java) ?: false
                 Log.d(tag, "Subscription status: $isSubscribed")
 
-                if (isSubscribed) {
-                    // Handle `businesses` field as a generic map
-                    val businesses = snapshot.child("businessId").value as? Map<String, Any>
-                    Log.d(tag, "Businesses field: $businesses")
 
-                    val businessId = businesses?.keys?.firstOrNull() ?: ""
+                if (snapshot.child("businessId").value is Map<*, *>) {
+                    val businessIdMap = snapshot.child("businessId").value as Map<*, *>
+                    val businessId = businessIdMap.keys.firstOrNull()?.toString() // Extract the first key as the businessId
+                    Log.d(tag, "Extracted Business ID: $businessId")
 
-                    Log.d(tag, "Business ID: $businessId")
-
-                    if (businessId.isNotBlank()) {
+                    if (!businessId.isNullOrBlank()) {
                         val businessRef = FirebaseDatabase.getInstance().getReference("businesses").child(businessId)
                         Log.d(tag, "Fetching business data for businessId: $businessId")
 
@@ -49,30 +46,33 @@ class SubscriptionChecker(private val context: Context) {
                         val businessName = businessSnapshot.child("businessName").getValue(String::class.java)
                         Log.d(tag, "Business name: $businessName")
 
-                        SubscriptionCache.saveSubscriptionDetails(context, isSubscribed, businessName,businessId)
+                        // Save subscription details to the cache for both subscribed and unsubscribed users
+                        SubscriptionCache.saveSubscriptionDetails(context, isSubscribed, businessName, businessId)
 
-                        return Pair(true, businessName)
+                        return Triple(isSubscribed, businessName,businessId)
                     } else {
                         Log.d(tag, "No business ID found for user.")
                         Toast.makeText(context, "User is not associated with any business.", Toast.LENGTH_SHORT).show()
-                        return Pair(false, null)
+                        return Triple(isSubscribed, null,null)
                     }
                 } else {
-                    Log.d(tag, "User is not subscribed.")
-                    Toast.makeText(context, "User is not subscribed.", Toast.LENGTH_SHORT).show()
-                    return Pair(false, null)
+                    Log.d(tag, "No business ID found or unexpected format.")
+                    Toast.makeText(context, "User is not associated with any business.", Toast.LENGTH_SHORT).show()
+                    return Triple(isSubscribed, null,null)
                 }
+
             } else {
                 Log.d(tag, "User not found in the database.")
                 Toast.makeText(context, "User not found in the database.", Toast.LENGTH_SHORT).show()
-                return Pair(false, null)
+                return Triple(false, null,null)
             }
         } catch (e: Exception) {
             Log.e(tag, "Error occurred while checking subscription: ${e.message}", e)
             Toast.makeText(context, "Failed to check subscription: ${e.message}", Toast.LENGTH_SHORT).show()
-            Pair(false, null)
+            return Triple(false, null,null)
         }
     }
+
 
 }
 

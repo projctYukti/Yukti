@@ -4,9 +4,7 @@ import android.content.Context
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.auth.FirebaseAuth
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
-import kotlinx.coroutines.tasks.await
+
 
 class FCMHelper(private val context: Context) {
 

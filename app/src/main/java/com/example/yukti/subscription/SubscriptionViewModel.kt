@@ -15,6 +15,9 @@ class SubscriptionViewModel : ViewModel() {
     private val _businessName = mutableStateOf<String?>(null)
     val businessName: State<String?> = _businessName
 
+    private val _businessId = mutableStateOf<String?>(null)
+    val businessId: State<String?> = _businessId
+
 
     // Methods to update the subscription status and business name
     fun setSubscriptionStatus(isSubscribed: Boolean) {
@@ -23,6 +26,9 @@ class SubscriptionViewModel : ViewModel() {
 
     fun setBusinessName(businessName: String) {
         _businessName.value = businessName
+    }
+    fun setBusinessId(businessId: String) {
+        _businessId.value = businessId
     }
     fun fetchSubscriptionStatus(subscriptionChecker: SubscriptionChecker) {
         viewModelScope.launch {
