@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +45,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.example.yukti.navigation.Routes
 import com.example.yukti.subscription.SubscriptionCache.businessId
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
@@ -51,7 +54,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun businessChatPage( receiverUsername: String, receiverUid: String) {
+fun businessChatPage( receiverUsername: String, receiverUid: String,navController: NavHostController) {
     // Get the ViewModel instance
     val chatViewModel: ChatViewModel = viewModel()
     var isTyping = chatViewModel.isTyping
@@ -99,7 +102,22 @@ fun businessChatPage( receiverUsername: String, receiverUid: String) {
                 receiverUsername, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-        })
+        },
+            navigationIcon = {
+                IconButton(onClick = {
+                    navController.navigate(Routes.businessMembers){
+                        popUpTo(navController.graph.startDestinationId)
+                        {
+                            inclusive = true
+                        }
+                    }
+
+                }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            },)
+
+
 
         Box(
             modifier = Modifier
