@@ -7,11 +7,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +32,7 @@ import androidx.navigation.NavHostController
 import com.example.yukti.navigation.Routes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextAlign
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -31,6 +40,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BusinessSetupPage(navController: NavHostController, userId: String) {
     val context = LocalContext.current
@@ -44,30 +54,51 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(25.dp),
+            .padding(start = 15.dp, end = 15.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Set Up Your Business",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        TopAppBar(title = {
+            Text("Create a Business",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+            navigationIcon = {
+                IconButton(onClick = {
+                    navController.navigate(Routes.chat){
+                        popUpTo(navController.graph.startDestinationId)
+                        {
+                            inclusive = true
+                        }
+                    }
 
-        TextField(
+                }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            },)
+        OutlinedTextField(
+
             value = businessName,
             onValueChange = { businessName = it },
+
             label = { Text("Business Name") },
-            modifier = Modifier.fillMaxWidth()
+
+            shape = RoundedCornerShape(20.dp) // Border radius
+
         )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
-            value = numberOfPeople,
-            onValueChange = { numberOfPeople = it },
-            label = { Text("Number of People") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+        OutlinedTextField(
+
+            value = businessName,
+            onValueChange = { businessName = it },
+
+            label = { Text("Number of people") },
+
+            shape = RoundedCornerShape(20.dp) // Border radius
+
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -129,7 +160,7 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.padding(start = 20.dp,end = 20.dp),
             enabled = !isLoading
         ) {
             Text(if (isLoading) "Saving..." else "Save and Continue")
