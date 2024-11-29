@@ -37,7 +37,7 @@ class ChatViewModel : ViewModel() {
     // Generative model client
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
-        apiKey = Constants.apiKey
+        apiKey = Constants().apiKey,
     )
 
     // Send message to generative AI model
