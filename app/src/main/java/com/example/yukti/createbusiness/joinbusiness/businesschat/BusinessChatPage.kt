@@ -1,5 +1,6 @@
 package com.example.yukti.createbusiness.joinbusiness.businesschat
 
+import android.R.attr.text
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.compose.foundation.background
@@ -53,6 +54,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun businessChatPage( receiverUsername: String, receiverUid: String) {
     // Get the ViewModel instance
     val chatViewModel: ChatViewModel = viewModel()
+    var isTyping = chatViewModel.isTyping
 
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     val currentUsername = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
@@ -62,11 +64,34 @@ fun businessChatPage( receiverUsername: String, receiverUid: String) {
     // Fetch messages when the screen is loaded
     LaunchedEffect(key1 = true) {
         chatViewModel.fetchMessages(currentUserUid, receiverUid)
+        chatViewModel.listenForTypingStatus(currentUserUid, receiverUid)
     }
+
     // Get the list of messages from the ViewModel
     val messages = chatViewModel.messages
 
     var message by remember { mutableStateOf("") }
+    // Handle debounce for typing status
+    LaunchedEffect(message) {
+        if (message.isNotEmpty() && !isTyping) {
+            isTyping = true
+            chatViewModel.updateTypingStatus(currentUserUid, receiverUid, true)
+        }
+
+        if (message.isEmpty() && isTyping) {
+            isTyping = false
+            chatViewModel.updateTypingStatus(currentUserUid, receiverUid, false)
+        }
+
+        // Debounce: Delay before marking as "stopped typing"
+        if (message.isNotEmpty()) {
+            kotlinx.coroutines.delay(2000) // 2 seconds
+            if (message.isEmpty()) {
+                isTyping = false
+                chatViewModel.updateTypingStatus(currentUserUid, receiverUid, false)
+            }
+        }
+    }
     Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp,end=10.dp)) {
         // Chat header (show receiver's name)
         TopAppBar(title = {
@@ -107,6 +132,15 @@ fun businessChatPage( receiverUsername: String, receiverUid: String) {
                         )
                     }
                 }
+                // Typing Indicator
+                if (isTyping) {
+                    Text(
+                        text = "Typing...",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp, bottom = 4.dp),
+                        color = Color.Gray
+                    )
+                }
 
                 // Message input field and send button
                 Row(
@@ -126,7 +160,10 @@ fun businessChatPage( receiverUsername: String, receiverUid: String) {
                         onClick = {
                             if (message.isNotEmpty()) {
                                 chatViewModel.sendMessage(currentUserUid, receiverUid, message)
+                                isTyping = false
                                 message = ""  // Clear the input field
+                                chatViewModel.updateTypingStatus(currentUserUid, receiverUid, false)
+
                             }
                         },
                         modifier = Modifier.padding(start = 8.dp)
