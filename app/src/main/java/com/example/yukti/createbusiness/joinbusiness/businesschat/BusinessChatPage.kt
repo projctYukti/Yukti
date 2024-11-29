@@ -115,7 +115,7 @@ fun businessChatPage( receiverUsername: String, receiverUid: String,navControlle
                 }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-            },)
+            })
 
 
 

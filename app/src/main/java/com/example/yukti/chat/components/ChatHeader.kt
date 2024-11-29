@@ -70,7 +70,7 @@ fun ChatHeader(onSignOut: () -> Job,
            title = {
 
                if (businessName != null){
-                   headerText = getSubscriptionDetails(LocalContext.current).second.toString()
+                   headerText = businessName.toString()
                }else{
 
                    headerText = "Chat"

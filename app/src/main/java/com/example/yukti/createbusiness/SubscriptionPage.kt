@@ -30,7 +30,7 @@ fun SubscriptionPage(navController: NavHostController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(modifier = Modifier.background(Color.Black),
+            TopAppBar(modifier = Modifier.padding(10.dp),
                 title = { Text("ChatGPT Plus") },
                 navigationIcon = {
                     IconButton(onClick = {
