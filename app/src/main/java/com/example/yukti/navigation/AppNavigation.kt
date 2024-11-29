@@ -135,7 +135,7 @@ fun AppNavigation(
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             val uid = backStackEntry.arguments?.getString("uid") ?: ""
-            businessChatPage(username = username, uid = uid)
+            businessChatPage(receiverUsername = username, receiverUid = uid)
         }
 
 
