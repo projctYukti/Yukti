@@ -13,15 +13,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.yukti.chat.ChatPage
 import com.example.yukti.createbusiness.BusinessSetupPage
 import com.example.yukti.createbusiness.SubscriptionPage
 import com.example.yukti.createbusiness.businessMembers
 
 import com.example.yukti.createbusiness.joinbusiness.JoinBusinessPage
+import com.example.yukti.createbusiness.joinbusiness.businesschat.businessChatPage
 import com.example.yukti.navigation.Routes.businessMembers
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.sign_in.SignInScreen
@@ -122,6 +125,17 @@ fun AppNavigation(
         }
         composable(Routes.businessMembers) {
             businessMembers(navController = navController)
+        }
+        composable(
+            route = "businessChat/{username}/{uid}",
+            arguments = listOf(
+                navArgument("username") { type = NavType.StringType },
+                navArgument("uid") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: ""
+            val uid = backStackEntry.arguments?.getString("uid") ?: ""
+            businessChatPage(receiverUsername = username, receiverUid = uid)
         }
 
 

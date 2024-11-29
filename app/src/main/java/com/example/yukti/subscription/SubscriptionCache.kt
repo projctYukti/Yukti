@@ -1,6 +1,7 @@
 package com.example.yukti.subscription
 
 import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import com.google.gson.Gson
 
 object SubscriptionCache {
@@ -16,10 +17,15 @@ object SubscriptionCache {
         val sharedPreferences = context.getSharedPreferences("BusinessPrefs", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
+
         // Save the subscription status and business name
         editor.putBoolean("isSubscribed", isSubscribed)
         editor.putString("businessName", businessName)
         editor.putString("businessId", businessId)
+        // Save the subscription status and business name
+        SubscriptionCache.isSubscribed = isSubscribed
+        SubscriptionCache.businessName = businessName
+        SubscriptionCache.businessId = businessId
 
         // Commit the changes
         editor.apply()

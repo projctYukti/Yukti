@@ -2,6 +2,7 @@ package com.example.yukti.createbusiness
 
 import ManageBusiness
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.yukti.navigation.Routes
 import com.example.yukti.subscription.SubscriptionCache
 import kotlinx.coroutines.launch
 
@@ -49,18 +51,19 @@ fun businessMembers(navController: NavHostController) {
 
         ) {
             items(members) { member ->
-                MemberItem(member)
+                MemberItem(member,navController)
             }
         }
     }
 }
 
 @Composable
-fun MemberItem(member: Members) {
+fun MemberItem(member: Members,navController: NavHostController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 30.dp),
+            .padding(top = 30.dp)
+            .clickable{navController.navigate("businessChat/${member.user.username}/${member.uid}")},
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
