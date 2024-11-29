@@ -211,8 +211,8 @@ fun ChatBubble(chatMessage: ChatMessage, isCurrentUser: Boolean, currentUsername
                 modifier = Modifier
                     .align(if (isCurrentUser) Alignment.BottomEnd else Alignment.BottomStart)
                     .padding(
-                        start = if (isCurrentUser) 4.dp else 10.dp,
-                        end = if (isCurrentUser) 10.dp else 4.dp,
+                        start = if (isCurrentUser) 100.dp else 5.dp,
+                        end = if (isCurrentUser) 5.dp else 100.dp,
                         top = 8.dp,
                         bottom = 8.dp
                     )
