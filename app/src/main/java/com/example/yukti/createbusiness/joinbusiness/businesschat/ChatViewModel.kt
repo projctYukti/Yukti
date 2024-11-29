@@ -78,7 +78,7 @@ class ChatViewModel : ViewModel() {
     // Update typing status with debounce logic
     fun updateTypingStatus(senderUid: String, receiverUid: String, isTyping: Boolean) {
         val chatPath = generateChatPath(businessId.toString(), senderUid, receiverUid)
-        val typingRef = database.getReference("chats/$chatPath/typing")
+        val typingRef = database.getReference("chats/$chatPath/typing/$senderUid")
 
         typingRef.setValue(isTyping)
             .addOnSuccessListener {
@@ -92,7 +92,7 @@ class ChatViewModel : ViewModel() {
     // Listen for typing status
     fun listenForTypingStatus(senderUid: String, receiverUid: String) {
         val chatPath = generateChatPath(businessId.toString(), senderUid, receiverUid)
-        val typingRef = database.getReference("chats/$chatPath/typing")
+        val typingRef = database.getReference("chats/$chatPath/typing/$receiverUid")
 
         val typingListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
