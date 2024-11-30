@@ -222,17 +222,6 @@ fun ChatBubble(chatMessage: ChatMessage, isCurrentUser: Boolean, currentUsername
             ) {
                 Column {
 
-                    Text(
-                        if (isCurrentUser) {
-                            currentUsername
-                        } else {
-                            receiverUsername
-                        },
-                        color = Color.White,
-
-
-                    ) // Different text color based on user)
-
 
                     Text(
                         text = chatMessage.message,
