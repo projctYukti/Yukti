@@ -1,9 +1,12 @@
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yukti.chat.MessageModel
 import com.example.yukti.gitignore.Constants
+import com.example.yukti.texttospeach.TTSHelper
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.ServerException
 import com.google.firebase.auth.FirebaseAuth
@@ -20,6 +23,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class ChatViewModel : ViewModel() {
+
 
     private val database: DatabaseReference = FirebaseDatabase.getInstance().getReference("chats")
 
@@ -38,11 +42,13 @@ class ChatViewModel : ViewModel() {
     )
 
     // Send message to generative AI model
-    fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String) {
+    fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String,context: Context) {
+
         viewModelScope.launch {
             try {
                 // Add the user's message to the local list and save to Firebase
                 val userMessageModel = MessageModel(message = userMessage, role = "user", timestamp = getCurrentDateTime())
+                val ttsHelper =  TTSHelper(context)
 
                 messageList.add(userMessageModel)
                 saveMessageToFirebase(chatId, userMessageModel, businessId, businessName)
@@ -64,6 +70,8 @@ class ChatViewModel : ViewModel() {
 
                 // Send chat history to the generative AI model
                 val modelResponse = generativeModel.generateContent(chatHistory)
+                ttsHelper.speak(modelResponse.text.toString())
+
 
                 // Remove "Typing..." message from the local list
                 messageList.remove(typingMessage)

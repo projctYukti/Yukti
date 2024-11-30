@@ -1,9 +1,14 @@
 package com.example.yukti.chat
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +20,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.AdfScanner
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -24,6 +30,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,18 +53,21 @@ import com.example.yukti.chat.components.ChatHeader
 import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
+import com.example.yukti.createbusiness.ExportChatData
 import com.example.yukti.navigation.Routes
+import com.example.yukti.permission.MicrophonePermission
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.subscription.SubscriptionCache
-import com.example.yukti.subscription.SubscriptionCache.businessId
 import com.example.yukti.subscription.SubscriptionCache.clearSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionChecker
 import com.example.yukti.subscription.SubscriptionViewModel
+import com.example.yukti.texttospeach.TTSHelper
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun ChatPage(
@@ -113,6 +123,7 @@ fun ChatPage(
 
     val chatId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_chat"
     val onSignOut = rememberCoroutineScope() // Move the rememberCoroutineScope here
+    val ttsHelper = remember { TTSHelper(context) }
 
     val signOutAction = {
         // Use the coroutine scope here
@@ -148,6 +159,12 @@ fun ChatPage(
         errorState?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             chatViewModel._errorState.value = null
+        }
+    }
+
+    DisposableEffect(context) {
+        onDispose {
+            ttsHelper.shutdown()  // Release resources
         }
     }
     LaunchedEffect(drawerState.isOpen) {
@@ -255,6 +272,14 @@ fun ChatPage(
 
                     when (item.title) {
 
+                        "Generate a bill"->{
+
+                            ExportChatData().exportChatData(context,
+                                getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),
+                                currentUserUid)
+
+                            }
+
                         "Business Members"->{
                             navController.navigate(Routes.businessMembers){
                                 popUpTo(navController.graph.startDestinationId)
@@ -316,8 +341,9 @@ fun ChatPage(
                     // Message input stays above the keyboard
                     MessageInput(
                         onMessageSend = {
-                            chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString())
-                        }
+                            chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString(),context)
+                        },
+                        context,businessId, businessName.toString(),currentUserUid
                     )
                 }
             }
@@ -370,8 +396,27 @@ fun MessaageRow(messageModel: MessageModel) {
 }
 
 @Composable
-fun MessageInput(onMessageSend: (String) -> Unit) {
+fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: String,businessName: String,currentUserUid: String) {
     var message by remember { mutableStateOf("") }
+    // Intent to capture speech
+    val speechRecognizerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val spokenText = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.get(0)
+            if (!spokenText.isNullOrEmpty()) {
+                message = spokenText
+                val generateBill = "Generate a Bill"
+                if (message.contains(generateBill, ignoreCase = true)) {
+
+                    ExportChatData().exportChatData(context,businessId,businessName,currentUserUid)
+
+                }
+                onMessageSend(message)// Send the message after speech-to-text
+                message = ""
+            }
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -385,13 +430,36 @@ fun MessageInput(onMessageSend: (String) -> Unit) {
             value = message,
             onValueChange = { message = it },
             label = { Text("Type a message") },
-            shape = RoundedCornerShape(20.dp) // Border radius
-
-
-
+            shape = RoundedCornerShape(20.dp) ,
+            trailingIcon = {
+                IconButton(onClick = {
+                    MicrophonePermission().checkAndRequestPermission(context as Activity)
+                    // Handle microphone button click (e.g., start voice input)
+                    if (SpeechRecognizer.isRecognitionAvailable(context)) {
+                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...")
+                        }
+                        speechRecognizerLauncher.launch(intent)
+                    } else {
+                        Toast.makeText(context, "Speech Recognition not available", Toast.LENGTH_SHORT).show()}
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Microphone"
+                    )
+                }
+            },
         )
         IconButton(onClick = {
             if (message.isNotBlank()) {
+                val generateBill = "Generate a Bill"
+                if (message.contains(generateBill, ignoreCase = true)) {
+
+                    ExportChatData().exportChatData(context,businessId,businessName,currentUserUid)
+
+                }
                 onMessageSend(message)
                 message = "" // Clear the message after sending
             }
