@@ -71,6 +71,7 @@ fun ChatPage(
     val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
     var businessName = subscriptionViewModel.businessName.value
     var businessId by remember { mutableStateOf("") }
+    val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
 
     LaunchedEffect(Unit) {
