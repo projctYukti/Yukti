@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,6 +62,7 @@ import com.example.yukti.subscription.SubscriptionCache.clearSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionChecker
 import com.example.yukti.subscription.SubscriptionViewModel
+import com.example.yukti.texttospeach.TTSHelper
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
@@ -121,6 +123,7 @@ fun ChatPage(
 
     val chatId = FirebaseAuth.getInstance().currentUser?.uid ?: "default_chat"
     val onSignOut = rememberCoroutineScope() // Move the rememberCoroutineScope here
+    val ttsHelper = remember { TTSHelper(context) }
 
     val signOutAction = {
         // Use the coroutine scope here
@@ -156,6 +159,12 @@ fun ChatPage(
         errorState?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             chatViewModel._errorState.value = null
+        }
+    }
+
+    DisposableEffect(context) {
+        onDispose {
+            ttsHelper.shutdown()  // Release resources
         }
     }
     LaunchedEffect(drawerState.isOpen) {
@@ -332,7 +341,7 @@ fun ChatPage(
                     // Message input stays above the keyboard
                     MessageInput(
                         onMessageSend = {
-                            chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString())
+                            chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString(),context)
                         },
                         context,businessId, businessName.toString(),currentUserUid
                     )
@@ -403,7 +412,8 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
                     ExportChatData().exportChatData(context,businessId,businessName,currentUserUid)
 
                 }
-                onMessageSend(spokenText)// Send the message after speech-to-text
+                onMessageSend(message)// Send the message after speech-to-text
+                message = ""
             }
         }
     }
