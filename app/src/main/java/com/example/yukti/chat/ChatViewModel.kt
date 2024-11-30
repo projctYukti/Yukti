@@ -97,7 +97,7 @@ class ChatViewModel : ViewModel() {
         businessId: String?,
         businessName: String
     ) {
-        if (businessId!=null){val messagesRef = database.child("businessChats").child(businessId).child(businessName)
+        if (businessId!=null){val messagesRef = database.child("businessChats").child(businessId).child(businessName).child(chatId)
             messagesRef.push().setValue(message)
                 .addOnSuccessListener {
                     Log.d("ChatViewModel", "Message saved successfully.")
@@ -117,7 +117,7 @@ class ChatViewModel : ViewModel() {
 
     fun loadChatMessages(chatId: String, businessId: String?, businessName: String) {
         Log.d("Business name and Id" , "$businessId + $businessName")
-        if (businessId!=null){database.child("businessChats").child(businessId).child(businessName)
+        if (businessId!=null){database.child("businessChats").child(businessId).child(businessName).child(chatId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val newMessageList = mutableListOf<MessageModel>()
