@@ -12,10 +12,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.AdfScanner
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,10 +49,9 @@ import com.example.yukti.chat.components.menu.NavDrawerItems
 import com.example.yukti.navigation.Routes
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.businessId
 import com.example.yukti.subscription.SubscriptionCache.clearSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
-import com.example.yukti.subscription.SubscriptionCache.isSubscribed
-import com.example.yukti.subscription.SubscriptionCache.saveSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionChecker
 import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.ui.theme.ColorModelMessage
@@ -71,6 +70,7 @@ fun ChatPage(
     val subscriptionChecker = SubscriptionChecker(context)
     val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
     var businessName = subscriptionViewModel.businessName.value
+    var businessId by remember { mutableStateOf("") }
 
 
     LaunchedEffect(Unit) {
@@ -90,7 +90,7 @@ fun ChatPage(
 
         SubscriptionCache.businessId = businessId
         subscriptionViewModel.setBusinessId(businessId.toString()) // Make sure it's set properly
-        Log.d("ChatPage", "Saved businessName to Cache: ${SubscriptionCache.businessId}")
+        Log.d("ChatPage", "Saved businessId to Cache: ${SubscriptionCache.businessId}")
 
     }
 
@@ -139,7 +139,8 @@ fun ChatPage(
     }
 
     LaunchedEffect(chatId) {
-        chatViewModel.onChatScreenOpened(chatId)
+        chatViewModel.onChatScreenOpened(chatId,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString())
+        Log.d("premiumUsers", getSubscriptionDetails(context).first.toString())
     }
 
     LaunchedEffect(errorState) {
@@ -182,6 +183,12 @@ fun ChatPage(
                     "View Member List",
                     icon = Icons.Default.AccountCircle
                 ),
+                NavDrawerItems(
+                    "Generate a bill",
+                    "Generate a bill",
+                    "Generate a bill",
+                    icon = Icons.Default.AdfScanner
+                ),
 
             )
         }
@@ -199,6 +206,12 @@ fun ChatPage(
                     "Business Members",
                     "View Member List",
                     icon = Icons.Default.AccountCircle
+                ),
+                NavDrawerItems(
+                    "Generate a bill",
+                    "Generate a bill",
+                    "Generate a bill",
+                    icon = Icons.Default.AdfScanner
                 ),
 
                 )
@@ -302,7 +315,7 @@ fun ChatPage(
                     // Message input stays above the keyboard
                     MessageInput(
                         onMessageSend = {
-                            chatViewModel.sendMessage(chatId, it)
+                            chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString())
                         }
                     )
                 }
