@@ -7,6 +7,6 @@ data class UserInfo(
 )
 
 data class Members(
-    val uid: String,
+    val userId: String,
     val user: UserInfo
 )
