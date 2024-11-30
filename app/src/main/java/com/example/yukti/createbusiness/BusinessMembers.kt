@@ -4,6 +4,7 @@ import ManageBusiness
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,10 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.yukti.navigation.Routes
 import com.example.yukti.subscription.SubscriptionCache
+import com.example.yukti.subscription.SubscriptionCache.businessId
+import com.example.yukti.ui.theme.ColorUserMessage
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +38,23 @@ fun businessMembers(navController: NavHostController) {
     val context = LocalContext.current
     var members by remember { mutableStateOf<List<Members>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var adminId by remember { mutableStateOf("") } // Mutable state for adminId
+    // Fetch the adminId when the composable is launched
+    LaunchedEffect(Unit) {
+        ManageBusiness().fetchAdminId(
+            businessId = businessId.toString(),
+            onSuccess = { fetchedAdminId ->
+                adminId = fetchedAdminId // Update adminId when fetched
+                Log.d("businessMembers", "Fetched Admin ID: $adminId")
+            },
+            onFailure = { error ->
+                Log.e("businessMembers", "Error fetching adminId: $error")
+            }
+        )
+    }
+
+
 
     // Fetch members when the Composable is launched
     LaunchedEffect(Unit) {
@@ -40,6 +63,7 @@ fun businessMembers(navController: NavHostController) {
             val businessId = SubscriptionCache.getSubscriptionDetails(context).third
             members = ManageBusiness().fetchBusinessMembers(businessId.toString()) // Fetch members using business ID
             isLoading = false
+
         }
     }
     Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp,end=10.dp)) {
@@ -83,8 +107,10 @@ fun businessMembers(navController: NavHostController) {
 
             ) {
                 items(members) { member ->
-                    MemberItem(member, navController)
-                    Log.d("profilePictureUrl",member.user.profilePictureUrl.toString())
+                    MemberItem(member, navController, adminId.toString(),currentUserUid)
+                    Log.d("adminId and currentUser", " adminId and currentUser is 1:$adminId $currentUserUid")
+
+
                 }
             }
         }
@@ -92,36 +118,61 @@ fun businessMembers(navController: NavHostController) {
 }
 
 @Composable
-fun MemberItem(member: Members,navController: NavHostController) {
+fun MemberItem(member: Members, navController: NavHostController, adminId: String, currentUserUid: String) {
+    Log.d("adminId and currentUser", " adminId and currentUser is2 :$adminId $currentUserUid")
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 10.dp)
-            .clickable{navController.navigate("businessChat/${member.user.username}/${member.uid}")},
-
+            .clickable {
+                navController.navigate("businessChat/${member.user.username}/${member.userId}")
+            },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically // Align items vertically in the center
+        ) {
+            // Profile Picture
+            Box {
+                Image(
+                    painter = rememberImagePainter(
+                        data = member.user.profilePictureUrl.toString(),
+                        builder = {
+                            crossfade(true) // Optional: smooth transition effect
+                        }
+                    ),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(50.dp) // Set size for the profile image
+                        .clip(CircleShape) // Make it circular
+                        .background(Color.Gray) // Placeholder background
+                )
 
-        Box(modifier = Modifier.fillMaxWidth()
-            .padding(vertical = 6.dp),
-            contentAlignment = Alignment.Center
-        ){
-            // Profile Picture Image
-            Image(
-                painter = rememberImagePainter(
-                    data = member.user.profilePictureUrl.toString(),
-                    builder = {
-                        crossfade(true) // Optional: smooth transition effect
+                // "Owner" or "Me" badge
+                if (member.userId == adminId || member.userId == currentUserUid) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd) // Align badge to the bottom-right corner of the profile picture
+                            .offset(x = 10.dp, y = 10.dp) // Offset to ensure proper positioning
+                            .background(ColorUserMessage, CircleShape) // Circular badge
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (member.userId == adminId) "Owner" else "Me",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
-                ),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(50.dp) // Set size for the profile image
-                    .clip(CircleShape) // Make it circular
-            )
+                }
+            }
 
-        }
-        Row(modifier = Modifier.padding(16.dp)) {
+            Spacer(modifier = Modifier.width(16.dp)) // Add spacing between the image and text
+
+            // Member details
             Column {
                 Text(
                     text = "Name: ${member.user.username}",

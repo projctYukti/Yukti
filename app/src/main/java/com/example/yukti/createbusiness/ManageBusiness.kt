@@ -42,4 +42,21 @@ class ManageBusiness {
         }
         return members
     }
+    fun fetchAdminId(businessId: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+        val businessRef = FirebaseDatabase.getInstance().getReference("businesses/$businessId/adminId")
+
+        businessRef.get()
+            .addOnSuccessListener { snapshot ->
+                val adminId = snapshot.getValue(String::class.java)
+                if (adminId != null) {
+                    onSuccess(adminId)
+                } else {
+                    onFailure("Admin ID not found.")
+                }
+            }
+            .addOnFailureListener { exception ->
+                onFailure("Failed to fetch Admin ID: ${exception.message}")
+            }
+    }
+
 }
