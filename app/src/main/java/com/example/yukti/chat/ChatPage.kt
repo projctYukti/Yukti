@@ -343,7 +343,8 @@ fun ChatPage(
                         onMessageSend = {
                             chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString(),context)
                         },
-                        context,businessId, businessName.toString(),currentUserUid
+                        context,
+                        getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),currentUserUid
                     )
                 }
             }
