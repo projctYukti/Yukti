@@ -22,15 +22,17 @@ import java.io.FileOutputStream
 class ExportChatData {
     fun exportChatData(
         context: Context,
-        businessId: String,
-        businessName: String,
-        currentUserUid: String
+//        businessId: String,
+//        businessName: String,
+//        currentUserUid: String
+        modelResponse: String
     ) {
-        val databaseReference = FirebaseDatabase.getInstance().getReference("chats").child("businessChats").child(businessId).child(businessName).child(currentUserUid)
-
-        // Fetch chat data
-        databaseReference.get().addOnSuccessListener { dataSnapshot ->
-            val chatData = dataSnapshot.value
+//        val databaseReference = FirebaseDatabase.getInstance().getReference("chats").child("businessChats").child(businessId).child(businessName).child(currentUserUid)
+//
+//        // Fetch chat data
+//        databaseReference.get().addOnSuccessListener { dataSnapshot ->
+//            val chatData = dataSnapshot.value
+                val chatData = modelResponse.toString()
             exportPdfData(context, chatData.toString())
 
 //            if (chatData != null) {
@@ -63,9 +65,9 @@ class ExportChatData {
 //            } else {
 //                Toast.makeText(context, "No chat data found to export!", Toast.LENGTH_SHORT).show()
 //            }
-        }.addOnFailureListener {
-            Toast.makeText(context, "Failed to fetch chat data: ${it.message}", Toast.LENGTH_SHORT).show()
-        }
+//        }.addOnFailureListener {
+//            Toast.makeText(context, "Failed to fetch chat data: ${it.message}", Toast.LENGTH_SHORT).show()
+//        }
     }
     private fun shareFile(file: File, context: Context) {
         val uri = androidx.core.content.FileProvider.getUriForFile(

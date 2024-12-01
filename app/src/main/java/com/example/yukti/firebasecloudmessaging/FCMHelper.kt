@@ -1,6 +1,7 @@
 package com.example.yukti.firebasecloudmessaging
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.auth.FirebaseAuth
@@ -23,32 +24,36 @@ class FCMHelper(private val context: Context) {
 
 
     // Save FCM token to the Firebase Realtime Database
-    fun saveTokenToDatabase(fcmToken: String?) {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null && fcmToken != null) {
-            val databaseReference = FirebaseDatabase.getInstance().getReference("users")
-            val userId = currentUser.uid
-            databaseReference.child(userId).child("fcmToken").setValue(fcmToken)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        println("FCM token saved successfully")
-                    } else {
-                        println("Failed to save FCM token: ${task.exception?.message}")
-                    }
-                }
+    fun saveFcmTokenToDatabase(userId: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                // Handle error
+                Log.w("FCM", "Fetching FCM token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            // Get FCM Token
+            val token = task.result
+            Log.d("FCM", "FCM Token: $token")
+
+            // Save token to Firebase Realtime Database
+            val database = FirebaseDatabase.getInstance()
+            val userTokenRef = database.reference.child("users").child(userId).child("fcmToken")
+            userTokenRef.setValue(token)
         }
     }
 
+
     // Update the FCM token in case of token refresh
-    fun updateFCMTokenOnTokenRefresh() {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+    fun deleteFcmTokenFromDatabase(userId: String) {
+        val database = FirebaseDatabase.getInstance()
+        val userTokenRef = database.reference.child("users").child(userId).child("fcmToken")
+        userTokenRef.removeValue().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val refreshedToken = task.result
-                // You can save the refreshed token in the database
-                saveTokenToDatabase(refreshedToken)
+                Log.d("FCM", "Token successfully removed from database")
             } else {
-                println("Error refreshing FCM token: ${task.exception?.message}")
+                Log.w("FCM", "Failed to remove token", task.exception)
             }
         }
     }
+
 }

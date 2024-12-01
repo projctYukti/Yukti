@@ -56,6 +56,7 @@ import com.example.yukti.chat.components.menu.NavDrawerItems
 import com.example.yukti.createbusiness.ExportChatData
 import com.example.yukti.navigation.Routes
 import com.example.yukti.permission.MicrophonePermission
+import com.example.yukti.permission.RequestNotificationPermission
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.subscription.SubscriptionCache
 import com.example.yukti.subscription.SubscriptionCache.clearSubscriptionDetails
@@ -76,6 +77,7 @@ fun ChatPage(
 
 ) {
 
+    RequestNotificationPermission()
     val context = LocalContext.current
     val subscriptionChecker = SubscriptionChecker(context)
     val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
@@ -274,9 +276,9 @@ fun ChatPage(
 
                         "Generate a bill"->{
 
-                            ExportChatData().exportChatData(context,
-                                getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),
-                                currentUserUid)
+//                            ExportChatData().exportChatData(context,
+//                                getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),
+//                                currentUserUid)
 
                             }
 
@@ -407,12 +409,7 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
             val spokenText = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.get(0)
             if (!spokenText.isNullOrEmpty()) {
                 message = spokenText
-                val generateBill = "Generate a Bill"
-                if (message.contains(generateBill, ignoreCase = true)) {
 
-                    ExportChatData().exportChatData(context,businessId,businessName,currentUserUid)
-
-                }
                 onMessageSend(message)// Send the message after speech-to-text
                 message = ""
             }
@@ -434,17 +431,22 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
             shape = RoundedCornerShape(20.dp) ,
             trailingIcon = {
                 IconButton(onClick = {
-                    MicrophonePermission().checkAndRequestPermission(context as Activity)
-                    // Handle microphone button click (e.g., start voice input)
-                    if (SpeechRecognizer.isRecognitionAvailable(context)) {
-                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...")
-                        }
-                        speechRecognizerLauncher.launch(intent)
-                    } else {
-                        Toast.makeText(context, "Speech Recognition not available", Toast.LENGTH_SHORT).show()}
+                    if (MicrophonePermission().checkAndRequestPermission(context as Activity)){
+                        // Handle microphone button click (e.g., start voice input)
+                        if (SpeechRecognizer.isRecognitionAvailable(context)) {
+                            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                                putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...")
+                            }
+                            speechRecognizerLauncher.launch(intent)
+                        } else {
+                            Toast.makeText(context, "Speech Recognition not available", Toast.LENGTH_SHORT).show()}
+                    }else{
+                        Toast.makeText(context, "Permission not granted", Toast.LENGTH_SHORT).show()
+                    }
+
+
                 }) {
                     Icon(
                         imageVector = Icons.Default.Mic,
@@ -455,12 +457,7 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
         )
         IconButton(onClick = {
             if (message.isNotBlank()) {
-                val generateBill = "Generate a Bill"
-                if (message.contains(generateBill, ignoreCase = true)) {
 
-                    ExportChatData().exportChatData(context,businessId,businessName,currentUserUid)
-
-                }
                 onMessageSend(message)
                 message = "" // Clear the message after sending
             }
