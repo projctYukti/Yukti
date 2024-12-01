@@ -130,12 +130,15 @@ fun AppNavigation(
             route = "businessChat/{username}/{uid}",
             arguments = listOf(
                 navArgument("username") { type = NavType.StringType },
-                navArgument("uid") { type = NavType.StringType }
+                navArgument("uid") { type = NavType.StringType },
+
+
             )
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             val uid = backStackEntry.arguments?.getString("uid") ?: ""
-            businessChatPage(receiverUsername = username, receiverUid = uid)
+
+            businessChatPage(receiverUsername = username, receiverUid = uid,navController)
         }
 
 
