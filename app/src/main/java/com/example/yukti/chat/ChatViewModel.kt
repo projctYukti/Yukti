@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yukti.chat.MessageModel
+import com.example.yukti.createbusiness.ExportChatData
 import com.example.yukti.gitignore.Constants
 import com.example.yukti.texttospeach.TTSHelper
 import com.google.ai.client.generativeai.GenerativeModel
@@ -49,21 +50,39 @@ class ChatViewModel : ViewModel() {
                 // Add the user's message to the local list and save to Firebase
                 val userMessageModel = MessageModel(message = userMessage, role = "user", timestamp = getCurrentDateTime())
                 val ttsHelper =  TTSHelper(context)
+                val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill")
+                var chatHistory: String
+                var typingMessage: MessageModel
 
                 messageList.add(userMessageModel)
                 saveMessageToFirebase(chatId, userMessageModel, businessId, businessName)
 
+                if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true)}){
+                    // Add "Typing..." message to the local list (but do NOT save it to Firebase)
+                    typingMessage = MessageModel(message = "Generating a bill ...", role = "model", timestamp = getCurrentDateTime())
+                    messageList.add(typingMessage)
 
-                // Add "Typing..." message to the local list (but do NOT save it to Firebase)
-                val typingMessage = MessageModel(message = "Typing...", role = "model", timestamp = getCurrentDateTime())
-                messageList.add(typingMessage)
+                    chatHistory = messageList.filter { it.message != "Generating a bill ..." }.joinToString("\n") {
+                        "${it.role}: ${it.message}"
+                    }
+
+                    }else{
+
+                    // Add "Typing..." message to the local list (but do NOT save it to Firebase)
+                    typingMessage = MessageModel(message = "Typing...", role = "model", timestamp = getCurrentDateTime())
+                    messageList.add(typingMessage)
 
 
-                // Prepare chat history (include loaded Firebase messages)
+                    // Prepare chat history (include loaded Firebase messages)
 
-                val chatHistory = messageList.filter { it.message != "Typing..." }.joinToString("\n") {
-                    "${it.role}: ${it.message}"
-                }
+                    chatHistory = messageList.filter { it.message != "Typing..." }.joinToString("\n") {
+                        "${it.role}: ${it.message}"
+                    }
+
+                    }
+
+
+
 
 
 
@@ -73,6 +92,7 @@ class ChatViewModel : ViewModel() {
                 ttsHelper.speak(modelResponse.text.toString())
 
 
+
                 // Remove "Typing..." message from the local list
                 messageList.remove(typingMessage)
 
@@ -80,6 +100,9 @@ class ChatViewModel : ViewModel() {
                 val modelMessageModel = MessageModel(message = modelResponse.text.toString(), role = "model", timestamp = getCurrentDateTime())
                 messageList.add(modelMessageModel)
                 saveMessageToFirebase(chatId, modelMessageModel,businessId,businessName)
+                if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true) } && modelResponse.text.toString() != null){
+                    ExportChatData().exportChatData(context, modelResponse.text.toString())
+                }
 
 //            } catch (e: Exception) {
 //                _errorState.value = "Something went wrong. Please try again."

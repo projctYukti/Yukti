@@ -20,6 +20,7 @@ import com.example.learningcompose.update.UpdateChecker
 
 import com.example.yukti.navigation.AppNavigation
 import com.example.yukti.navigation.Routes
+import com.example.yukti.permission.RequestNotificationPermission
 import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.ui.theme.YuktiTheme
 import com.google.android.gms.auth.api.identity.Identity
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
 
 
         enableEdgeToEdge()
+
 
 
 // Perform your update check here
