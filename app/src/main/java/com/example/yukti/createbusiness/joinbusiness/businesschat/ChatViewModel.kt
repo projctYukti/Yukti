@@ -53,7 +53,7 @@ class ChatViewModel : ViewModel() {
         val chatMessage = ChatMessage(
             sender = senderUid,
             receiver = receiverUid,
-            message = message,
+            message = message + getCurrentDateTime(),
             timestamp = getCurrentDateTime(),
 
         )
