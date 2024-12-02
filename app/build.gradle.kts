@@ -18,8 +18,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 39
-        versionName = "6.1.0"
+        versionCode = 45
+        versionName = "6.1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,12 +51,16 @@ dependencies {
     implementation (libs.glide)
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation (libs.androidx.material.icons.extended)
-    implementation ("androidx.compose.material3:material3:1.3.1")
-    implementation ("com.google.code.gson:gson:2.10.1")
-    implementation ("com.google.firebase:firebase-bom:32.2.3")
-    implementation ("com.google.firebase:firebase-auth")
-    implementation ("com.google.firebase:firebase-messaging")
-    implementation ("com.google.firebase:firebase-database")
+    implementation (libs.material3)
+    implementation (libs.gson)
+    implementation (libs.firebase.bom.v3223)
+    implementation (libs.google.firebase.auth)
+    implementation (libs.google.firebase.messaging)
+    implementation (libs.google.firebase.database)
+
+    implementation (libs.hilt.android)
+    implementation (libs.okhttp)
+    implementation (libs.gson)
 
 
 

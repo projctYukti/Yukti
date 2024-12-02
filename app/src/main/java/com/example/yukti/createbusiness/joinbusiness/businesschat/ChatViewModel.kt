@@ -4,8 +4,12 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.yukti.notifications.SendMessageNotification
 import com.example.yukti.subscription.SubscriptionCache
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class ChatViewModel : ViewModel() {
 
@@ -45,24 +49,48 @@ class ChatViewModel : ViewModel() {
         listeners["messages"] = messageListener
     }
 
-    // Function to send a message
     fun sendMessage(senderUid: String, receiverUid: String, message: String) {
         val chatMessage = ChatMessage(
             sender = senderUid,
             receiver = receiverUid,
             message = message,
-            timestamp = System.currentTimeMillis()
+            timestamp = getCurrentDateTime(),
+
         )
 
         val chatPath = generateChatPath(businessId.toString(), senderUid, receiverUid)
-        val messageRef = database.getReference("chats/$chatPath/messages").push()
+        val messageRef = FirebaseDatabase.getInstance().getReference("chats/$chatPath/messages").push()
+        val currentUserName = FirebaseAuth.getInstance().currentUser?.displayName ?: "Unknown User"
 
+        // Send the message
         messageRef.setValue(chatMessage)
             .addOnSuccessListener {
-                Log.d("ChatViewModel", "Message sent successfully")
+                // After message is successfully saved, fetch the FCM token of the receiver
+                FirebaseDatabase.getInstance().getReference("users").child(receiverUid)
+                    .child("fcmToken").get()
+                    .addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) {
+                            val fcmToken = snapshot.getValue(String::class.java)
+                            if (!fcmToken.isNullOrEmpty()) {
+                                // Send the notification with the fetched FCM token
+                                Log.e("FCM", "Got Fcm token for receiver: $fcmToken")
+                                SendMessageNotification().sendNotificationToUser(fcmToken, currentUserName, message)
+                            } else {
+                                Log.e("FCM", "FCM token is null or empty for receiver: $receiverUid")
+                            }
+                        } else {
+                            Log.e("FCM", "FCM token not found for receiver: $receiverUid")
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        // Handle failure if the FCM token retrieval fails
+                        Log.e("FCM", "Failed to retrieve FCM token for receiver: $receiverUid, ${exception.message}")
+                    }
+
+                Log.d("ChatViewModel", "Message sent successfully to $receiverUid")
             }
             .addOnFailureListener {
-                Log.e("ChatViewModel", "Failed to send message: ${it.message}")
+                Log.e("ChatViewModel", "Failed to send message to $receiverUid: ${it.message}")
             }
     }
 
@@ -115,5 +143,10 @@ class ChatViewModel : ViewModel() {
             database.getReference("chats/$key").removeEventListener(listener)
         }
         listeners.clear()
+    }
+    fun getCurrentDateTime(): String {
+        val currentDateTime = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // You can customize the format
+        return currentDateTime.format(formatter)
     }
 }

@@ -57,7 +57,9 @@ class GoogleAuthUiClient(
             val user = auth.signInWithCredential(googleCredentials).await().user
 
             val userData = user?.run {
-                UserData(uid, displayName, photoUrl?.toString(),email, FCMHelper(context).getFCMToken())
+                UserData(uid, displayName, photoUrl?.toString(),email,
+                    FCMHelper(context).saveFcmTokenToDatabase(uid).toString()
+                )
             }
 
             if (userData != null) {
@@ -79,6 +81,8 @@ class GoogleAuthUiClient(
         try {
             oneTapClient.signOut().await()
             auth.signOut()
+            FCMHelper(context).deleteFcmTokenFromDatabase(auth.currentUser?.uid ?: "")
+            println("User signed out successfully")
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
