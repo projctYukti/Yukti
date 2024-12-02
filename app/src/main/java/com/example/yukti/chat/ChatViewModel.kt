@@ -48,13 +48,14 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Add the user's message to the local list and save to Firebase
-                val userMessageModel = MessageModel(message = userMessage, role = "user", timestamp = getCurrentDateTime())
+                val userMessageModel = MessageModel(message = userMessage + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
                 val ttsHelper =  TTSHelper(context)
-                val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill")
+                val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill","invoice")
                 var chatHistory: String
                 var typingMessage: MessageModel
 
                 messageList.add(userMessageModel)
+                Log.d("userMessageModel",userMessageModel.toString())
                 saveMessageToFirebase(chatId, userMessageModel, businessId, businessName)
 
                 if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true)}){
