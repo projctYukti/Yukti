@@ -88,6 +88,7 @@ fun ChatPage(
 
     LaunchedEffect(Unit) {
         val (isSubscribed, businessName , businessId ) = subscriptionChecker.checkSubscription()
+
         // Check if the values are being fetched correctly
         Log.d("ChatPage", "Fetched isSubscribed: $isSubscribed, businessName: $businessName")
 
