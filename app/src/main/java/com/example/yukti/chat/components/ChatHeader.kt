@@ -47,8 +47,10 @@ fun ChatHeader(onSignOut: () -> Job,
 
     ) {
 
+        val context = LocalContext.current
         var expanded by remember { mutableStateOf(false) }
         var headerText by remember { mutableStateOf("Chat") } // Default header text
+        val businessName = SubscriptionCache.getSubscriptionDetails(context).second
 
 
 
@@ -103,7 +105,7 @@ fun ChatHeader(onSignOut: () -> Job,
                            onSignOut()
                            fun reset() {
                                isSubscribed = false
-                               businessName = null
+                               SubscriptionCache.businessName = null
                            }
                        }
                    )
