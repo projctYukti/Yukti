@@ -1,8 +1,12 @@
 package com.example.yukti.chat
 
 import android.app.Activity
+
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.os.Build
+import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
@@ -19,6 +23,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.AdfScanner
 import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Send
@@ -53,8 +58,8 @@ import com.example.yukti.chat.components.ChatHeader
 import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
-import com.example.yukti.createbusiness.ExportChatData
 import com.example.yukti.navigation.Routes
+import com.example.yukti.permission.CameraPermission
 import com.example.yukti.permission.MicrophonePermission
 import com.example.yukti.permission.RequestNotificationPermission
 import com.example.yukti.sign_in.GoogleAuthUiClient
@@ -66,7 +71,15 @@ import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.texttospeach.TTSHelper
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.java.GenerativeModelFutures
+import com.google.ai.client.generativeai.type.Content
+import com.google.ai.client.generativeai.type.GenerateContentResponse
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.firebase.auth.FirebaseAuth
+import geminiImagePrompt
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -353,6 +366,7 @@ fun ChatPage(
             }
         }
     }
+
 }
 
 @Composable
@@ -401,6 +415,26 @@ fun MessaageRow(messageModel: MessageModel) {
 
 @Composable
 fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: String,businessName: String,currentUserUid: String) {
+    var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var showGeminiPrompt by remember { mutableStateOf(false) }
+    // Gemini Prompt Trigger
+    if (showGeminiPrompt && photoBitmap != null) {
+        geminiImagePrompt(photoBitmap!!)
+        
+        showGeminiPrompt = false // Reset the trigger after invoking Gemini
+    }
+    // Launcher for the camera intent
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            photoBitmap = result.data?.extras?.get("data") as? Bitmap
+            showGeminiPrompt = true // Trigger Gemini prompt in a composable-safe way
+            Toast.makeText(context, "Photo captured successfully", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Camera action canceled", Toast.LENGTH_SHORT).show()
+        }
+    }
     var message by remember { mutableStateOf("") }
     // Intent to capture speech
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
@@ -430,6 +464,29 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
             onValueChange = { message = it },
             label = { Text("Type a message") },
             shape = RoundedCornerShape(20.dp) ,
+            leadingIcon = {
+                IconButton(onClick = {
+                    if (CameraPermission().checkAndRequestPermission(context as Activity)) {
+
+                        // Handle camera button click (e.g., open camera)
+                        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                        try {
+                            cameraLauncher.launch(cameraIntent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Error starting camera: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Permission not granted", Toast.LENGTH_SHORT).show()
+                    }
+
+                }) { }
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Camera"
+                    )
+
+
+            },
             trailingIcon = {
                 IconButton(onClick = {
                     if (MicrophonePermission().checkAndRequestPermission(context as Activity)){
@@ -466,4 +523,11 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
             Icon(imageVector = Icons.Default.Send, contentDescription = "Send Message")
         }
     }
+
+
+
 }
+
+
+
+
