@@ -1,15 +1,31 @@
 import android.content.Context
+import android.graphics.Bitmap
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yukti.chat.MessageModel
 import com.example.yukti.createbusiness.ExportChatData
 import com.example.yukti.gitignore.Constants
 import com.example.yukti.texttospeach.TTSHelper
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.java.GenerativeModelFutures
+import com.google.ai.client.generativeai.type.Content
+import com.google.ai.client.generativeai.type.GenerateContentResponse
 import com.google.ai.client.generativeai.type.ServerException
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -145,6 +161,7 @@ class ChatViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 Log.e("ChatViewModel", "Failed to save message: ${e.message}")
             }}
+
     }
 
     fun loadChatMessages(chatId: String, businessId: String?, businessName: String) {
@@ -218,4 +235,79 @@ class ChatViewModel : ViewModel() {
 
 
 
+
 }
+@Composable
+fun geminiImagePrompt(photoBitmap: Bitmap) {
+    val context = LocalContext.current
+    val resultText = remember { mutableStateOf<String?>(null) }
+    val isError = remember { mutableStateOf(false) }
+
+    LaunchedEffect(photoBitmap) {
+        try {
+            val apiKey = Constants().apiKey // Replace with your actual API key
+            val modelName = "gemini-1.5-flash"
+            val gm = GenerativeModel(modelName, apiKey)
+            val model = GenerativeModelFutures.from(gm)
+
+            val content = Content.Builder()
+                .text("What is this?")
+                .image(photoBitmap)
+                .build()
+
+            val response: ListenableFuture<GenerateContentResponse> = model.generateContent(content)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                Futures.addCallback(
+                    response,
+                    object : FutureCallback<GenerateContentResponse> {
+                        override fun onSuccess(result: GenerateContentResponse?) {
+                            resultText.value = result?.text
+                            Toast.makeText(context, result?.text.toString(), Toast.LENGTH_LONG).show()
+
+                        }
+
+                        override fun onFailure(t: Throwable) {
+                            t.printStackTrace()
+                            isError.value = true
+                        }
+                    },
+                    context.mainExecutor
+                )
+            } else {
+                Toast.makeText(context, "Requires API 28 or higher", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            isError.value = true
+        }
+    }
+
+    if (isError.value) {
+        Toast.makeText(context, "Error in processing request", Toast.LENGTH_SHORT).show()
+    }
+
+    resultText.value?.let { result ->
+        // Display result text in the UI
+        ResultDisplay(result)
+    }
+
+
+}
+@Composable
+fun ResultDisplay(result: String) {
+    val chatViewModel: ChatViewModel = viewModel()
+//    Update the messageList state
+            LaunchedEffect(result) {
+                chatViewModel.messageList.add(
+                    MessageModel(result, "model", chatViewModel.getCurrentDateTime())
+                )
+            }
+
+
+    Column {
+        Text(text = "Gemini Result:")
+        Text(text = result)
+    }
+}
+
