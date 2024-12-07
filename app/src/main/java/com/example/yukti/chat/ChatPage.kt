@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.Build
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -71,13 +70,6 @@ import com.example.yukti.subscription.SubscriptionViewModel
 import com.example.yukti.texttospeach.TTSHelper
 import com.example.yukti.ui.theme.ColorModelMessage
 import com.example.yukti.ui.theme.ColorUserMessage
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.java.GenerativeModelFutures
-import com.google.ai.client.generativeai.type.Content
-import com.google.ai.client.generativeai.type.GenerateContentResponse
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.firebase.auth.FirebaseAuth
 import geminiImagePrompt
 import kotlinx.coroutines.launch
@@ -85,11 +77,16 @@ import java.util.Locale
 
 @Composable
 fun ChatPage(
-    chatViewModel: ChatViewModel, googleAuthUiClient: GoogleAuthUiClient
-    , navController: NavHostController, subscriptionViewModel: SubscriptionViewModel
+    chatViewModel: ChatViewModel,
+    googleAuthUiClient: GoogleAuthUiClient
+    ,
+    navController: NavHostController,
+
+    modifier: Modifier
 
 ) {
 
+    val subscriptionViewModel= SubscriptionViewModel()
     RequestNotificationPermission()
     val context = LocalContext.current
     val subscriptionChecker = SubscriptionChecker(context)
@@ -275,7 +272,7 @@ fun ChatPage(
         drawerState = drawerState,
         drawerContent = {
             Column(
-                modifier = Modifier
+                modifier
                 .fillMaxHeight()
                 .background(Color.Gray) // Optional semi-transparent background
 
@@ -323,7 +320,7 @@ fun ChatPage(
         }}
     ) {
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier) {
             ChatHeader(onSignOut = signOutAction,
                 navItems = navItems,
                 onNavigationIconClick = {
@@ -334,17 +331,14 @@ fun ChatPage(
             )
 
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing
-                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
-                    )
+                modifier
+
                     .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)// Respect system bars
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier
+
+
 
                 ) {
                     // Message list adjusts dynamically to keyboard
@@ -454,12 +448,15 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
     Row(
         modifier = Modifier
             .padding(8.dp)
+            .statusBarsPadding()
+
+
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
 
     ) {
         OutlinedTextField(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).imePadding(),
             value = message,
             onValueChange = { message = it },
             label = { Text("Type a message") },

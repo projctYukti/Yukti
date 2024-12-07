@@ -10,5 +10,7 @@ object Routes {
     const val manageBusiness = "manageBusiness"
     const val businessMembers = "businessMembers"
     const val businessChat = "businessChat"
+    const val home = "home"
+    const val insights = "insights"
 
 }
