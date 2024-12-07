@@ -19,6 +19,7 @@ import com.example.learningcompose.update.ShowUpdateDialog
 import com.example.learningcompose.update.UpdateChecker
 
 import com.example.yukti.navigation.AppNavigation
+
 import com.example.yukti.navigation.Routes
 import com.example.yukti.permission.RequestNotificationPermission
 import com.example.yukti.sign_in.GoogleAuthUiClient
@@ -57,12 +58,8 @@ class MainActivity : ComponentActivity() {
 
 
 
-        // Determine the start destination based on login status
-        val startDestination = if (googleAuthUiClient.getSignedInUser() != null) {
-            Routes.chat
-        } else {
-            "sign_in"
-        }
+// Determine the start destination based on login status
+
 
         // Set the content for the activity
         setContent {
@@ -72,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(startDestination, chatViewModel, googleAuthUiClient,applicationContext)
+                    AppNavigation( chatViewModel, googleAuthUiClient,applicationContext)
 
                     // Show update dialog if needed
                     if (showDialog && apkUrl != null) {
