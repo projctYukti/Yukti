@@ -1,6 +1,8 @@
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
+import android.speech.tts.TextToSpeech
+import android.speech.tts.TextToSpeech.OnInitListener
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -40,6 +42,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import java.util.Locale
 
 class ChatViewModel : ViewModel() {
 
@@ -67,6 +70,21 @@ class ChatViewModel : ViewModel() {
         modelName = "gemini-1.5-flash",
         apiKey = Constants().apiKey,
     )
+
+    private var textToSpeech: TextToSpeech? = null
+    // State to manage TTS status
+    val isTTSActive = mutableStateOf(false)
+
+    // Initialize TextToSpeech here if needed
+    fun initTTS(context: Context) {
+        textToSpeech = TextToSpeech(context, OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                textToSpeech?.setLanguage(Locale.US)
+            } else {
+                Log.e("TTS", "Initialization failed")
+            }
+        })
+    }
 
     // Send message to generative AI model
     fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String,context: Context) {
@@ -285,6 +303,24 @@ class ChatViewModel : ViewModel() {
         val currentDateTime = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // You can customize the format
         return currentDateTime.format(formatter)
+    }
+    // Start Text-to-Speech
+    fun startTextToSpeech(text: String) {
+        if (isTTSActive.value) return // TTS is already active
+        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+        isTTSActive.value = true
+    }
+
+    // Stop Text-to-Speech
+    fun stopTextToSpeech() {
+        textToSpeech?.stop()
+        isTTSActive.value = false
+    }
+
+    // Release resources when the ViewModel is cleared
+    override fun onCleared() {
+        super.onCleared()
+        textToSpeech?.shutdown()
     }
 
 

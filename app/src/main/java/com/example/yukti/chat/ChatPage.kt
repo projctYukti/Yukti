@@ -5,15 +5,19 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,10 +48,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.yukti.MainActivity
@@ -58,6 +64,7 @@ import com.example.yukti.chat.components.menu.DrawerBody
 import com.example.yukti.chat.components.menu.DrawerHeader
 import com.example.yukti.chat.components.menu.NavDrawerItems
 import com.example.yukti.navigation.Routes
+import com.example.yukti.navigation.isKeyboardOpen
 import com.example.yukti.permission.CameraPermission
 import com.example.yukti.permission.MicrophonePermission
 import com.example.yukti.permission.RequestNotificationPermission
@@ -81,10 +88,22 @@ fun ChatPage(
     googleAuthUiClient: GoogleAuthUiClient
     ,
     navController: NavHostController,
-
-    modifier: Modifier
+    innerPadding : PaddingValues
 
 ) {
+
+    var isKeyboardVisible by remember { mutableStateOf(false) }
+    isKeyboardVisible = isKeyboardOpen()
+    Log.d("Keyboard open?", isKeyboardVisible.toString())
+
+
+    var defaultPadding: PaddingValues = PaddingValues( bottom = 0.dp)
+
+    val innerKeyboardPadding = if (isKeyboardVisible) {
+        defaultPadding // Use the default padding when the keyboard is visible
+    } else {
+        innerPadding // Use the default padding when the keyboard is not visible
+    }
 
     val subscriptionViewModel= SubscriptionViewModel()
     RequestNotificationPermission()
@@ -95,6 +114,7 @@ fun ChatPage(
     var businessId by remember { mutableStateOf("") }
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     val subscriptionChecker = SubscriptionChecker(context)
+
 
 
 
@@ -274,7 +294,7 @@ fun ChatPage(
         drawerState = drawerState,
         drawerContent = {
             Column(
-                modifier
+                modifier = Modifier.fillMaxSize()
                 .fillMaxHeight()
                 .background(Color.Gray) // Optional semi-transparent background
 
@@ -322,7 +342,7 @@ fun ChatPage(
         }}
     ) {
 
-        Column(modifier) {
+        Column(modifier = Modifier) {
             ChatHeader(onSignOut = signOutAction,
                 navItems = navItems,
                 onNavigationIconClick = {
@@ -333,12 +353,12 @@ fun ChatPage(
             )
 
             Box(
-                modifier
+                modifier = Modifier
 
                     .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)// Respect system bars
             ) {
                 Column(
-                    modifier
+                    modifier = Modifier.padding(innerKeyboardPadding)
 
 
 
@@ -362,6 +382,7 @@ fun ChatPage(
             }
         }
     }
+
 
 }
 
@@ -450,7 +471,7 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
     Row(
         modifier = Modifier
             .padding(8.dp)
-            .statusBarsPadding()
+            .imePadding()
 
 
             .fillMaxWidth(),
@@ -458,7 +479,7 @@ fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: St
 
     ) {
         OutlinedTextField(
-            modifier = Modifier.weight(1f).imePadding(),
+            modifier = Modifier.weight(1f),
             value = message,
             onValueChange = { message = it },
             label = { Text("Type a message") },
