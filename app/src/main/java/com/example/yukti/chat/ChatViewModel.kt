@@ -38,6 +38,8 @@ import kotlinx.coroutines.launch
 import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 
 class ChatViewModel : ViewModel() {
 
@@ -51,7 +53,15 @@ class ChatViewModel : ViewModel() {
     // Flow to handle errors (e.g., network or other issues)
      val _errorState = MutableStateFlow<String?>(null)
     val errorState: StateFlow<String?> = _errorState
+    private val _inventoryResult = mutableStateOf<String?>(null)
+    val inventoryResult: State<String?> = _inventoryResult
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+    // Define a function to simulate loading
+    fun setLoadingState(loading: Boolean) {
+        _isLoading.value = loading
+    }
     // Generative model client
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
@@ -64,7 +74,7 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Add the user's message to the local list and save to Firebase
-                val userMessageModel = MessageModel(message = userMessage + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
+                val userMessageModel = MessageModel(message = userMessage + "\n" + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
                 val ttsHelper =  TTSHelper(context)
                 val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill","invoice")
                 var chatHistory: String
@@ -163,6 +173,49 @@ class ChatViewModel : ViewModel() {
             }}
 
     }
+    fun loadMessagesAndFetchInventory(businessId: String?, businessName: String, context: Context) {
+        _isLoading.value = true
+
+        database.child("businessChats").child(businessId ?: "").child(businessName).child(chatId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    messageList.clear()
+                    for (messageSnapshot in snapshot.children) {
+                        val message = messageSnapshot.child("message").value as? String
+                        val role = messageSnapshot.child("role").value as? String
+                        if (message != null && role != null) {
+                            messageList.add(MessageModel(message, role, getCurrentDateTime()))
+                        }
+                    }
+
+                    // After loading messages, call the Gemini API
+                    viewModelScope.launch {
+                        val chatHistory = messageList.joinToString("\n") { "${it.role}: ${it.message}" }
+                        val prompt = "Provide an inventory summary based on the following conversation and don't uses notes: \n$chatHistory"
+
+                        try {
+                            val generativeModel = GenerativeModel(
+                                modelName = "gemini-1.5-flash",
+                                apiKey = Constants().apiKey
+                            )
+                            val response = generativeModel.generateContent(prompt)
+                            _inventoryResult.value = response.text.toString()
+                        } catch (e: Exception) {
+                            Log.e("ChatViewModel", "Error: ${e.message}")
+                            _inventoryResult.value = "Error fetching inventory details."
+                        } finally {
+                            _isLoading.value = false
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("ChatViewModel", "Error loading messages: ${error.message}")
+                    _isLoading.value = false
+                }
+            })
+    }
+
 
     fun loadChatMessages(chatId: String, businessId: String?, businessName: String) {
         Log.d("Business name and Id" , "$businessId + $businessName")
@@ -184,6 +237,7 @@ class ChatViewModel : ViewModel() {
                     // Reverse if messages in Firebase are stored in reverse order
                     messageList.clear()
                     messageList.addAll(newMessageList)
+
 
                     Log.d("ChatViewModel", "Chat messages loaded: ${messageList.size}")
                 }
