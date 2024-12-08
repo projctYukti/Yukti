@@ -89,11 +89,13 @@ fun ChatPage(
     val subscriptionViewModel= SubscriptionViewModel()
     RequestNotificationPermission()
     val context = LocalContext.current
-    val subscriptionChecker = SubscriptionChecker(context)
+
     val isSubscribed by subscriptionViewModel.isSubscribed.collectAsState()
     var businessName = subscriptionViewModel.businessName.value
     var businessId by remember { mutableStateOf("") }
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val subscriptionChecker = SubscriptionChecker(context)
+
 
 
     LaunchedEffect(Unit) {
