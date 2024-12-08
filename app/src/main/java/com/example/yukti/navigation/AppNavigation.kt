@@ -1,14 +1,25 @@
 package com.example.yukti.navigation
 
+import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.graphics.Rect
+import android.os.Build
+import android.util.Log
+import android.view.View
+import android.view.ViewTreeObserver
+import androidx.core.view.WindowInsetsCompat
+
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -23,6 +34,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
@@ -33,6 +47,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.util.Logger
 import com.example.yukti.Home.HomePage
 import com.example.yukti.Insights.Insights
 import com.example.yukti.NavItems
@@ -47,6 +62,7 @@ import com.example.yukti.sign_in.SignInScreen
 import com.example.yukti.sign_in.SignInViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun AppNavigation(
@@ -78,6 +94,17 @@ fun AppNavigation(
     // Check if bottom navigation should be shown
     val showBottomNavigation = currentRoute != Routes.signIn
 
+
+
+    var isKeyboardVisible by remember { mutableStateOf(false) }
+    isKeyboardVisible = isKeyboardOpen()
+    Log.d("Keyboard open?", isKeyboardVisible.toString())
+
+
+    var defaultPadding: PaddingValues = PaddingValues( bottom = 0.dp)
+    // Adjust padding based on keyboard visibility
+
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -108,12 +135,14 @@ fun AppNavigation(
                 }
             }
         },
-        contentWindowInsets = WindowInsets.statusBars.only(WindowInsetsSides.Horizontal)
+        contentWindowInsets = WindowInsets.statusBars.only(WindowInsetsSides.Bottom)
     ) { innerPadding ->
+
+
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
         ) {
             // Sign-in screen
             composable(Routes.signIn) {
@@ -160,7 +189,7 @@ fun AppNavigation(
             }
 
             composable(Routes.home) {
-                HomePage(modifier = Modifier.fillMaxSize())
+                HomePage(modifier = Modifier.fillMaxSize().padding(innerPadding))
             }
 
             composable(Routes.chat) {
@@ -168,12 +197,13 @@ fun AppNavigation(
                     chatViewModel = chatViewModel,
                     googleAuthUiClient = googleAuthUiClient,
                     navController = navController,
-                    modifier = Modifier.fillMaxSize()
-                )
+                    innerPadding
+                    )
+
             }
 
             composable(Routes.insights) {
-                Insights(modifier = Modifier.fillMaxSize())
+                Insights(modifier = Modifier.fillMaxSize().padding(innerPadding))
             }
 
             composable(Routes.subscriptionPage) {
@@ -209,4 +239,24 @@ fun AppNavigation(
             }
         }
     }
+}
+
+@Composable
+fun isKeyboardOpen(): Boolean {
+    val view = LocalView.current
+    var isKeyboardVisible by remember { mutableStateOf(false) }
+
+    DisposableEffect(view) {
+        val listener = ViewTreeObserver.OnGlobalLayoutListener {
+            val rect = Rect()
+            view.getWindowVisibleDisplayFrame(rect)
+            val screenHeight = view.rootView.height
+            val keypadHeight = screenHeight - rect.bottom
+            isKeyboardVisible = keypadHeight > screenHeight * 0.15
+        }
+        view.viewTreeObserver.addOnGlobalLayoutListener(listener)
+        onDispose { view.viewTreeObserver.removeOnGlobalLayoutListener(listener) }
+    }
+
+    return isKeyboardVisible
 }
