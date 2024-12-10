@@ -41,7 +41,6 @@ import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import java.util.Locale
 
 class ChatViewModel : ViewModel() {
@@ -134,7 +133,14 @@ class ChatViewModel : ViewModel() {
 
                 // Send chat history to the generative AI model
                 val modelResponse = generativeModel.generateContent(chatHistory)
-                ttsHelper.speak(modelResponse.text.toString())
+                // Regex to match seconds (e.g., :45, 45s)
+                val secondsRegex = """\b(:\d{1,2}|\d{1,2}s)\b""".toRegex()
+                val timeRegex = """\b\d{1,2}:\d{2}(:\d{2})?\b""".toRegex()
+                val dateRegex ="""\b(\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}|\d{4}[/\-]\d{1,2}[/\-]\d{1,2}|\b(?:Today|Tomorrow|Yesterday)\b)\b""".toRegex(RegexOption.IGNORE_CASE)
+                ttsHelper.speak(
+                    modelResponse.text?.replace(dateRegex, "")
+                        ?.replace(timeRegex, "")?.replace(secondsRegex, "")?.replace("\\s+".toRegex(), " ")?.trim().toString()
+                )
 
 
 
@@ -166,7 +172,7 @@ class ChatViewModel : ViewModel() {
     }
 
 
-    private fun saveMessageToFirebase(
+     fun saveMessageToFirebase(
         chatId: String,
         message: MessageModel,
 
@@ -328,9 +334,16 @@ class ChatViewModel : ViewModel() {
 
 }
 @Composable
-fun geminiImagePrompt(photoBitmap: Bitmap) {
+fun geminiImagePrompt(
+    photoBitmap: Bitmap,
+    chatViewModel1: ChatViewModel,
+    businessId: String,
+    businessName: String,
+    chatId: String
+) {
     val context = LocalContext.current
     val resultText = remember { mutableStateOf<String?>(null) }
+    val ttsHelper =  TTSHelper(context)
     val isError = remember { mutableStateOf(false) }
 
     LaunchedEffect(photoBitmap) {
@@ -353,7 +366,32 @@ fun geminiImagePrompt(photoBitmap: Bitmap) {
                     object : FutureCallback<GenerateContentResponse> {
                         override fun onSuccess(result: GenerateContentResponse?) {
                             resultText.value = result?.text
-                            Toast.makeText(context, result?.text.toString(), Toast.LENGTH_LONG).show()
+                            ttsHelper.speak(resultText.value.toString())
+
+
+                            val userMessage = MessageModel(
+                                message = "Image",
+                                role = "user",
+                                timestamp = chatViewModel1.getCurrentDateTime()
+                            )
+                            chatViewModel1.messageList.add(userMessage)
+                            chatViewModel1.saveMessageToFirebase(chatId, userMessage,businessId,businessName)
+
+                            // Add "Typing..." message to the local list (but do NOT save it to Firebase)
+                           val typingMessage = MessageModel(message = "Typing...", role = "model", timestamp = chatViewModel1.getCurrentDateTime())
+                            chatViewModel1.messageList.add(typingMessage)
+
+
+                            val modelMessage = MessageModel(
+                                message = result?.text.toString(),
+                                role = "model",
+                                timestamp = chatViewModel1.getCurrentDateTime()
+                            )
+                            chatViewModel1.messageList.add(modelMessage)
+                            chatViewModel1.messageList.remove(typingMessage)
+
+                            chatViewModel1.saveMessageToFirebase(chatId, modelMessage,businessId,businessName)
+
 
                         }
 
