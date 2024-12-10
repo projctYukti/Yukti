@@ -2,6 +2,7 @@ package com.example.yukti.createbusiness
 
 import ManageBusiness
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
+import com.example.yukti.animations.TripleOrbitLoadingAnimation
 import com.example.yukti.navigation.Routes
 import com.example.yukti.subscription.SubscriptionCache
 import com.example.yukti.subscription.SubscriptionCache.businessId
@@ -96,7 +98,7 @@ fun businessMembers(navController: NavHostController) {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                TripleOrbitLoadingAnimation(modifier = Modifier.size(100.dp))
             }
         } else {
             LazyColumn(
@@ -125,7 +127,7 @@ fun MemberItem(member: Members, navController: NavHostController, adminId: Strin
             .fillMaxWidth()
             .padding(bottom = 10.dp)
             .clickable {
-                navController.navigate("businessChat/${member.user.username}/${member.userId}")
+                navController.navigate("businessChat/${member.user.username}/${member.userId}/${Uri.encode(member.user.profilePictureUrl)}")
             },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
