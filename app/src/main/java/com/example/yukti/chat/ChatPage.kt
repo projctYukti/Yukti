@@ -5,19 +5,15 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Rect
 import android.provider.MediaStore
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
-import android.view.View
-import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,12 +44,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.yukti.MainActivity
@@ -376,7 +370,7 @@ fun ChatPage(
                             chatViewModel.sendMessage(chatId, it,getSubscriptionDetails(context).third,getSubscriptionDetails(context).second.toString(),context)
                         },
                         context,
-                        getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),currentUserUid
+                        getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),currentUserUid,chatViewModel,chatId
                     )
                 }
             }
@@ -431,12 +425,21 @@ fun MessaageRow(messageModel: MessageModel) {
 }
 
 @Composable
-fun MessageInput(onMessageSend: (String) -> Unit,context: Context,businessId: String,businessName: String,currentUserUid: String) {
+fun MessageInput(
+    onMessageSend: (String) -> Unit,
+    context: Context,
+    businessId: String,
+    businessName: String,
+    currentUserUid: String,
+    chatViewModel: ChatViewModel,
+    chatId: String
+) {
     var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var showGeminiPrompt by remember { mutableStateOf(false) }
     // Gemini Prompt Trigger
     if (showGeminiPrompt && photoBitmap != null) {
-        geminiImagePrompt(photoBitmap!!)
+
+        geminiImagePrompt(photoBitmap!!,chatViewModel,businessId,businessName,chatId)
         
         showGeminiPrompt = false // Reset the trigger after invoking Gemini
     }

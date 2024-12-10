@@ -30,6 +30,7 @@ import com.example.yukti.subscription.SubscriptionCache
 import com.example.yukti.subscription.SubscriptionCache.businessName
 import com.example.yukti.subscription.SubscriptionCache.getSubscriptionDetails
 import com.example.yukti.subscription.SubscriptionCache.isSubscribed
+import com.example.yukti.subscription.SubscriptionCache.reset
 import com.example.yukti.subscription.SubscriptionChecker
 
 import com.example.yukti.subscription.SubscriptionViewModel
@@ -103,13 +104,12 @@ fun ChatHeader(onSignOut: () -> Job,
                        onClick = {
                            expanded = false
                            onSignOut()
-                           fun reset() {
-                               isSubscribed = false
-                               SubscriptionCache.businessName = null
-                           }
+                            reset()
+
                        }
                    )
                }
            })
     }
+
 }

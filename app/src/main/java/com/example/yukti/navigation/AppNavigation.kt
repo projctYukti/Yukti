@@ -1,25 +1,20 @@
 package com.example.yukti.navigation
 
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.graphics.Rect
-import android.os.Build
+import android.net.Uri
 import android.util.Log
-import android.view.View
 import android.view.ViewTreeObserver
-import androidx.core.view.WindowInsetsCompat
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -34,12 +29,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -47,7 +40,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import coil.util.Logger
 import com.example.yukti.Home.HomePage
 import com.example.yukti.Insights.Insights
 import com.example.yukti.NavItems
@@ -223,18 +215,22 @@ fun AppNavigation(
             }
 
             composable(
-                route = "businessChat/{username}/{uid}",
+                route = "businessChat/{username}/{uid}/{profilePictureUrl}",
                 arguments = listOf(
                     navArgument("username") { type = NavType.StringType },
-                    navArgument("uid") { type = NavType.StringType }
+                    navArgument("uid") { type = NavType.StringType },
+                    navArgument("profilePictureUrl") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
                 val username = backStackEntry.arguments?.getString("username") ?: ""
                 val uid = backStackEntry.arguments?.getString("uid") ?: ""
+                val profilePictureUrl = Uri.decode(backStackEntry.arguments?.getString("profilePictureUrl") ?: "")
                 businessChatPage(
                     receiverUsername = username,
                     receiverUid = uid,
-                    navController = navController
+                    navController = navController,
+                    innerPadding,
+                    profilePictureUrl
                 )
             }
         }
