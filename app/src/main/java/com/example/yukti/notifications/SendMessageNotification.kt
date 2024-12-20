@@ -11,7 +11,7 @@ class SendMessageNotification {
 
     fun sendNotificationToUser( fcmToken: String, title: String, message: String) {
         Log.d("FCM", "Sending notification to user: $fcmToken $title $message")
-        val serverKey = Constants().serverKey.toString()
+        val serverKey = Constants()
         Log.d("ServerKey","Server Key: $serverKey")
         val url = "https://fcm.googleapis.com/fcm/send"
 

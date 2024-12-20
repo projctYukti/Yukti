@@ -1,5 +1,6 @@
 package com.example.yukti.navigation
 
+import ChatViewModel
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.graphics.Rect
@@ -199,7 +200,7 @@ fun AppNavigation(
             }
 
             composable(Routes.subscriptionPage) {
-                SubscriptionPage(navController = navController)
+                BusinessSetupPage(navController = navController, userId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty())
             }
 
             composable(Routes.businessSetup) {
