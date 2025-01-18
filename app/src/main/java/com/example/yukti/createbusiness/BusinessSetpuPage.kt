@@ -92,8 +92,8 @@ fun BusinessSetupPage(navController: NavHostController, userId: String) {
 
         OutlinedTextField(
 
-            value = businessName,
-            onValueChange = { businessName = it },
+            value = numberOfPeople,
+            onValueChange = { numberOfPeople = it },
 
             label = { Text("Number of people") },
 

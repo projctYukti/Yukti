@@ -18,8 +18,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 58
-        versionName = "6.3.0"
+        versionCode = 60
+        versionName = "6.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

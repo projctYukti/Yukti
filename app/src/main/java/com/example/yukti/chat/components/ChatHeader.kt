@@ -39,7 +39,7 @@ import kotlinx.coroutines.Job
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatHeader(onSignOut: () -> Job,
+fun     ChatHeader(onSignOut: () -> Job,
                navItems: List<NavDrawerItems> = emptyList(), // Pass navigation items,
                onNavigationIconClick: () -> Unit={}){
     var expanded by remember { mutableStateOf(false) }

@@ -1,5 +1,6 @@
 package com.example.yukti.chat
 
+import ChatViewModel
 import android.app.Activity
 
 import android.content.Context
@@ -349,7 +350,7 @@ fun ChatPage(
             Box(
                 modifier = Modifier
 
-                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)// Respect system bars
+                    .padding(start = 10.dp, end = 10.dp)// Respect system bars
             ) {
                 Column(
                     modifier = Modifier.padding(innerKeyboardPadding)
