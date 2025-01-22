@@ -18,8 +18,8 @@ android {
         applicationId = "com.example.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 60
-        versionName = "6.3.1"
+        versionCode = 61
+        versionName = "6.3.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,7 +49,11 @@ android {
 
 dependencies {
 
-    implementation ("com.google.guava:guava:32.1.3-android")
+
+    implementation ("com.onesignal:OneSignal:4.8.6")
+
+
+    implementation (libs.guava)
     implementation (libs.glide)
     implementation(libs.coil.compose)
     implementation (libs.androidx.material.icons.extended)

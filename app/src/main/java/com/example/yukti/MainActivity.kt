@@ -1,8 +1,11 @@
 package com.example.yukti
 
+import ChatViewModel
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +29,8 @@ import com.example.yukti.sign_in.GoogleAuthUiClient
 import com.example.yukti.ui.theme.YuktiTheme
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.database.FirebaseDatabase
+import com.onesignal.OneSignal
+
 
 class MainActivity : ComponentActivity() {
     private val googleAuthUiClient by lazy {
@@ -41,8 +46,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
+// Initialize OneSignal
+        OneSignal.initWithContext(this)
+        OneSignal.setAppId("02eb57f2-fe80-41d7-917c-ed6cdb1b6567")
+        Log.d("OneSignal", "App ID is set")
+        // Optional: Request notification permissions for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                101
+            )
+        }
 
         enableEdgeToEdge()
 
