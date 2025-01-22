@@ -3,64 +3,57 @@ import android.util.Log
 import com.example.yukti.gitignore.Constants
 import okhttp3.*
 import com.google.gson.JsonObject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.IOException
 
 
 class SendMessageNotification {
 
-    fun sendNotificationToUser( fcmToken: String, title: String, message: String) {
-        Log.d("FCM", "Sending notification to user: $fcmToken $title $message")
-        val serverKey = Constants()
-        Log.d("ServerKey","Server Key: $serverKey")
-        val url = "https://fcm.googleapis.com/fcm/send"
+    fun sendNotificationToReceiver(receiverFcmToken: String, currentUserName: String, message: String) {
+        // Use a Coroutine to ensure the network request runs in a background thread
+        CoroutineScope(Dispatchers.IO).launch {
+            val client = OkHttpClient()
 
-        // Create the JSON payload
-        val payload = JsonObject().apply {
-            addProperty("to", fcmToken)
-            add("notification", JsonObject().apply {
-                addProperty("title", title)
-                addProperty("body", message)
-            })
-        }
-
-        // Create MediaType using toMediaType() instead of get or parse
-        val mediaType = "application/json".toMediaType()
-
-        // Build the request
-        val requestBody = RequestBody.create(mediaType, payload.toString())
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "key=$serverKey")
-            .addHeader("Content-Type", "application/json")
-            .post(requestBody)
-            .build()
-
-        // Send the request
-        val client = OkHttpClient()
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
+            // JSON payload for OneSignal
+            val json = """
+            {
+                "app_id": "02eb57f2-fe80-41d7-917c-ed6cdb1b6567",
+                "include_player_ids": ["$receiverFcmToken"],
+                "contents": {"en": "$message"},
+                "headings": {"en": "$currentUserName"},
+                "data": {"key1": "value1", "key2": "value2"}
             }
+            """
 
-            override fun onResponse(call: Call, response: Response) {
+            val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), json)
+
+            val request = Request.Builder()
+                .url("https://onesignal.com/api/v1/notifications")
+                .post(body)
+                .addHeader(
+                    "Authorization",
+                    "os_v2_app_alvvp4x6qba5pel45vwnwg3fm5266wuwblkegc54gmf2eofrjwlv2t5mrxi436tu6r72kr3zfu3znk42suabuzrtmc3zoc2go3cudxq"
+                )
+                .build()
+
+            try {
+                val response = client.newCall(request).execute()
+
+                // Log the response details
                 if (response.isSuccessful) {
-                    println("Notification sent successfully!")
-                    Log.d("FCM", "Notification sent successfully!")
+                    Log.d("OneSignal", "Notification sent successfully")
                 } else {
-                    try {
-                        val errorBody = response.body?.string()
-                        Log.e("FCM", "Error body: $errorBody")
-                    } catch (e: IOException) {
-                        Log.e("FCM", "Failed to read error body: ${e.message}")
-                    }
-                    println("Error sending notification: ${response.message}")
-                    Log.d("FCM", "Error sending notification: ${response.message}")
+                    val errorBody = response.body?.string()
+                    Log.e("OneSignal", "Error sending notification: ${response.message} (Code: ${response.code})")
+                    Log.e("OneSignal", "Error body: $errorBody")
                 }
+            } catch (e: Exception) {
+                Log.e("OneSignal", "Exception: ${e.message}", e)
             }
-        })
+        }
     }
-
-
 }

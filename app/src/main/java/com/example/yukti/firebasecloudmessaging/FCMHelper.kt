@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.auth.FirebaseAuth
+import com.onesignal.OneSignal
 
 
 class FCMHelper(private val context: Context) {
@@ -21,6 +22,35 @@ class FCMHelper(private val context: Context) {
             null // Return null if there's an error
         }.toString()
     }
+    fun saveOneSignalPlayerIdToDatabase(userId: String) {
+        // Retrieve the OneSignal Player ID
+        val playerId = OneSignal.getDeviceState()?.userId
+
+        // Check if the Player ID is not null
+        if (playerId != null) {
+            // Log the Player ID
+            Log.d("OneSignal", "Player ID: $playerId")
+
+            // Get a reference to the Firebase Realtime Database
+            val database = FirebaseDatabase.getInstance()
+            val userRef = database.reference.child("users").child(userId)
+
+            // Save the OneSignal Player ID to Firebase Realtime Database
+            val playerIdRef = userRef.child("oneSignalPlayerId")
+            playerIdRef.setValue(playerId)
+                .addOnSuccessListener {
+                    // Successfully saved the Player ID
+                    Log.d("OneSignal", "Player ID saved to database.")
+                }
+                .addOnFailureListener { exception ->
+                    // Handle the error
+                    Log.w("OneSignal", "Failed to save Player ID: ${exception.message}")
+                }
+        } else {
+            Log.w("OneSignal", "Player ID is null.")
+        }
+    }
+
 
 
     // Save FCM token to the Firebase Realtime Database
@@ -55,5 +85,6 @@ class FCMHelper(private val context: Context) {
             }
         }
     }
+
 
 }

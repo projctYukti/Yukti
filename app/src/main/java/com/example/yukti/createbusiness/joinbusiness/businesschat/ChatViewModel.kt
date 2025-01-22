@@ -1,5 +1,6 @@
 package com.example.yukti.createbusiness.joinbusiness.businesschat
 
+
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +9,10 @@ import com.example.yukti.notifications.SendMessageNotification
 import com.example.yukti.subscription.SubscriptionCache
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -67,14 +72,14 @@ class ChatViewModel : ViewModel() {
             .addOnSuccessListener {
                 // After message is successfully saved, fetch the FCM token of the receiver
                 FirebaseDatabase.getInstance().getReference("users").child(receiverUid)
-                    .child("fcmToken").get()
+                    .child("oneSignalPlayerId").get()
                     .addOnSuccessListener { snapshot ->
                         if (snapshot.exists()) {
                             val fcmToken = snapshot.getValue(String::class.java)
                             if (!fcmToken.isNullOrEmpty()) {
                                 // Send the notification with the fetched FCM token
                                 Log.e("FCM", "Got Fcm token for receiver: $fcmToken")
-                                SendMessageNotification().sendNotificationToUser(fcmToken, currentUserName, message)
+                                SendMessageNotification().sendNotificationToReceiver(fcmToken, currentUserName, message)
                             } else {
                                 Log.e("FCM", "FCM token is null or empty for receiver: $receiverUid")
                             }
@@ -88,6 +93,7 @@ class ChatViewModel : ViewModel() {
                     }
 
                 Log.d("ChatViewModel", "Message sent successfully to $receiverUid")
+
             }
             .addOnFailureListener {
                 Log.e("ChatViewModel", "Failed to send message to $receiverUid: ${it.message}")
@@ -149,4 +155,5 @@ class ChatViewModel : ViewModel() {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // You can customize the format
         return currentDateTime.format(formatter)
     }
+
 }

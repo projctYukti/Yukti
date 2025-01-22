@@ -10,5 +10,6 @@ data class UserData(
     val username: String?,
     val profilePictureUrl: String?,
     val email: String?,
-    val fcmToken: String?
+    val fcmToken: String?,
+    val oneSignalPlayerId:String?
 )

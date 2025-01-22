@@ -3,6 +3,7 @@ package com.example.yukti.sign_in
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.util.Log
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -15,6 +16,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.ktx.messaging
 import com.google.firebase.messaging.remoteMessage
+import com.onesignal.OneSignal
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 
@@ -55,10 +57,13 @@ class GoogleAuthUiClient(
 
             val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
             val user = auth.signInWithCredential(googleCredentials).await().user
+            val playerId = OneSignal.getDeviceState()?.userId
+            Log.d("OneSignal", "Player ID: $playerId")
 
             val userData = user?.run {
                 UserData(uid, displayName, photoUrl?.toString(),email,
-                    FCMHelper(context).saveFcmTokenToDatabase(uid).toString()
+                    FCMHelper(context).saveFcmTokenToDatabase(uid).toString(),
+                    FCMHelper(context).saveOneSignalPlayerIdToDatabase(uid).toString()
                 )
             }
 
@@ -90,13 +95,16 @@ class GoogleAuthUiClient(
     }
 
   fun getSignedInUser(): UserData? = auth.currentUser?.run {
-
+    val playerId = OneSignal.getDeviceState()?.userId
+      Log.d("OneSignal", "Player ID: $playerId")
         UserData(
             userId = uid,
             username = displayName,
             profilePictureUrl = photoUrl?.toString(),
             email = email,
-            fcmToken = FCMHelper(context).getFCMToken()
+            fcmToken = FCMHelper(context).getFCMToken(),
+            oneSignalPlayerId =  playerId
+
 
         )
     }
@@ -115,17 +123,20 @@ class GoogleAuthUiClient(
             .build()
     }
     suspend fun saveUserToDatabase(userData: UserData) {
+
         try {
             val userRef = database.child("users").child(userData.userId)
 
             // Retrieve the existing user data from the database
             val snapshot = userRef.get().await()
             val storedUserData = snapshot.getValue(UserData::class.java)
+            Log.d("UserData", "Stored User Data: $storedUserData")
 
             // Check if the stored data matches the current data
             if (storedUserData == null ||
                 storedUserData.username != userData.username ||
-                storedUserData.profilePictureUrl != userData.profilePictureUrl) {
+                storedUserData.profilePictureUrl != userData.profilePictureUrl ||
+                storedUserData.oneSignalPlayerId != userData.oneSignalPlayerId) {
 
                 // Data has changed, update the database
                 userRef.setValue(userData).await()
