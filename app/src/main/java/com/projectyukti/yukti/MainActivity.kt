@@ -1,0 +1,113 @@
+package com.projectyukti.yukti
+
+import ChatViewModel
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModelProvider
+import com.projectyukti.learningcompose.update.ShowUpdateDialog
+import com.projectyukti.learningcompose.update.UpdateChecker
+
+import com.projectyukti.yukti.navigation.AppNavigation
+
+import com.projectyukti.yukti.navigation.Routes
+import com.projectyukti.yukti.permission.RequestNotificationPermission
+import com.projectyukti.yukti.sign_in.GoogleAuthUiClient
+import com.projectyukti.yukti.ui.theme.YuktiTheme
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.database.FirebaseDatabase
+import com.onesignal.OneSignal
+
+
+class MainActivity : ComponentActivity() {
+    private val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+    }
+
+    private var showDialog by mutableStateOf(false)
+    private var apkUrl: String? by mutableStateOf(null)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+// Initialize OneSignal
+        OneSignal.initWithContext(this)
+        OneSignal.setAppId("02eb57f2-fe80-41d7-917c-ed6cdb1b6567")
+        Log.d("OneSignal", "App ID is set")
+        // Optional: Request notification permissions for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                101
+            )
+        }
+
+        enableEdgeToEdge()
+
+
+
+
+// Perform your update check here
+        checkForUpdates()
+
+
+
+
+
+
+
+// Determine the start destination based on login status
+
+
+        // Set the content for the activity
+        setContent {
+            YuktiTheme {
+                val chatViewModel = ViewModelProvider(this)[ChatViewModel::class.java]
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavigation( chatViewModel, googleAuthUiClient,applicationContext)
+
+                    // Show update dialog if needed
+                    if (showDialog && apkUrl != null) {
+                        ShowUpdateDialog(
+                            onDismiss = { showDialog = false },
+                            onUpdate = { apkUrl?.let { downloadAndInstallApk(it) } }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun checkForUpdates() {
+        UpdateChecker.checkForUpdates(this) { url ->
+            apkUrl = url
+            showDialog = true
+        }
+    }
+
+    private fun downloadAndInstallApk(apkUrl: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl))
+        startActivity(intent)
+    }
+}
+
+
