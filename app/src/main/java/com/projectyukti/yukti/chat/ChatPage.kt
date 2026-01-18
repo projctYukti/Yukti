@@ -73,6 +73,7 @@ import com.projectyukti.yukti.texttospeach.TTSHelper
 import com.projectyukti.yukti.ui.theme.ColorModelMessage
 import com.projectyukti.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
+import com.projectyukti.yukti.createbusiness.ExportChatData
 import geminiImagePrompt
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -240,7 +241,7 @@ fun ChatPage(
 
             )
         }
-        else if (getSubscriptionDetails(context).first == false && getSubscriptionDetails(context).second != null){
+        else if (!getSubscriptionDetails(context).first && getSubscriptionDetails(context).second != null){
 
             listOf(
                 NavDrawerItems(
@@ -256,9 +257,9 @@ fun ChatPage(
                     icon = Icons.Default.AccountCircle
                 ),
                 NavDrawerItems(
-                    "Generate a bill",
-                    "Generate a bill",
-                    "Generate a bill",
+                    "Export Chat data",
+                    "Export Chat data",
+                    "Export Chat data",
                     icon = Icons.Default.AdfScanner
                 ),
 
@@ -304,9 +305,7 @@ fun ChatPage(
 
                         "Generate a bill"->{
 
-//                            ExportChatData().exportChatData(context,
-//                                getSubscriptionDetails(context).third.toString(),getSubscriptionDetails(context).second.toString(),
-//                                currentUserUid)
+                         ExportChatData().exportChatData(context,chatViewModel.messageList.toString())
 
                             }
 
