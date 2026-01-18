@@ -8,28 +8,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:619289553362:android:1f7192c1845b7cf3cd400b",
+        "mobilesdk_app_id": "1:619289553362:android:14f40b3ab59a68bacd400b",
         "android_client_info": {
-          "package_name": "com.example.yukti"
+          "package_name": "com.projectyukti.yukti"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "619289553362-6smju8k51ca3o2ms2vgkvci7cefg5ht8.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.yukti",
-            "certificate_hash": "826013509906f7fd586441a05cf1ee28c6de3449"
-          }
-        },
-        {
-          "client_id": "619289553362-sf7tfgd829mrklcjvtcgkvc9dk3sac03.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.yukti",
-            "certificate_hash": "09b7ecfcec1f018e464473795ce1bb4865af204a"
-          }
-        },
         {
           "client_id": "619289553362-gjno612inf0ij83afmq3du0sv60l24n7.apps.googleusercontent.com",
           "client_type": 3

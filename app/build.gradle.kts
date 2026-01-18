@@ -11,15 +11,15 @@ plugins {
 android {
 
 
-    namespace = "com.example.yukti"
+    namespace = "com.projectyukti.yukti"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.yukti"
+        applicationId = "com.projectyukti.yukti"
         minSdk = 26
         targetSdk = 35
-        versionCode = 62
-        versionName = "6.3.3"
+        versionCode = 63
+        versionName = "6.3.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
