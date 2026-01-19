@@ -18,6 +18,9 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxCoroutinesPlayServices = "1.9.0"
+ktorClientAndroid = "3.3.3"
+ktorClientCore = "3.3.3"
+ktorUtils = "3.3.3"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.11.00"
@@ -32,7 +35,10 @@ materialIconsExtended = "1.7.5"
 navigationCompose = "2.8.4"
 okhttp = "4.12.0"
 onesignal = "[4.8.6,4.8.6)"
+onesignalVersion = "5.4.2"
 playServicesAuth = "21.2.0"
+postgrestKt = "3.3.0"
+storageKt = "3.3.0"
 ui = "1.7.5"
 firebaseMessaging = "24.1.0"
 
@@ -76,10 +82,16 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 firebase-inappmessaging-display = { group = "com.google.firebase", name = "firebase-inappmessaging-display", version.ref = "firebaseInappmessagingDisplay" }
 kotlinx-coroutines-play-services-v161 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientAndroid" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
+ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktorUtils" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 onesignal = { module = "com.onesignal:OneSignal", version.ref = "onesignal" }
+onesignal-v542 = { module = "com.onesignal:OneSignal", version.ref = "onesignalVersion" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+postgrest-kt = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "postgrestKt" }
+storage-kt = { module = "io.github.jan-tennert.supabase:storage-kt", version.ref = "storageKt" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 

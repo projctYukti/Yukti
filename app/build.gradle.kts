@@ -12,14 +12,14 @@ android {
 
 
     namespace = "com.projectyukti.yukti"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.projectyukti.yukti"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 63
-        versionName = "6.3.6"
+        targetSdk = 36
+        versionCode = 65
+        versionName = "6.3.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -50,8 +50,15 @@ android {
 dependencies {
 
 
-    implementation ("com.onesignal:OneSignal:4.8.6")
-
+    implementation (libs.onesignal.v542)
+    //supabase dependencies
+    implementation(libs.postgrest.kt)
+    implementation(libs.storage.kt)
+    implementation("io.github.jan-tennert.supabase:auth-kt:$1.6.0")
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.utils)
+    //supabase dependencies
 
     implementation (libs.guava)
     implementation (libs.glide)
@@ -59,7 +66,7 @@ dependencies {
     implementation (libs.androidx.material.icons.extended)
     implementation (libs.material3)
     implementation (libs.gson)
-    implementation (libs.firebase.bom.v3223)
+    implementation (platform(libs.firebase.bom.v3223))
     implementation (libs.google.firebase.auth)
     implementation (libs.google.firebase.messaging)
     implementation (libs.google.firebase.database)
@@ -76,7 +83,7 @@ dependencies {
     implementation (libs.play.services.auth)
     implementation (libs.firebase.auth.ktx)
     implementation (libs.kotlinx.coroutines.play.services.v161)
-    implementation(libs.firebase.bom)
+    implementation(platform(libs.firebase.bom))
 
     implementation (libs.material3)
     implementation (libs.ui)
