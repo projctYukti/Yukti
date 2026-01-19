@@ -41,6 +41,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.State
 import com.projectyukti.yukti.gitignore.Constants
+import com.projectyukti.yukti.supabase.SupabaseCRUD
 import java.util.Locale
 
 class ChatViewModel : ViewModel() {
@@ -89,6 +90,7 @@ class ChatViewModel : ViewModel() {
     fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String,context: Context) {
 
         viewModelScope.launch {
+            SupabaseCRUD().insertBusinessData(businessId, businessName, userMessage, getCurrentDateTime())
             // Add the user's message to the local list and save to Firebase
             val userMessageModel = MessageModel(message = userMessage + "\n" + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
             val ttsHelper =  TTSHelper(context)

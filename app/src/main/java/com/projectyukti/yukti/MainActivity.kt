@@ -30,6 +30,7 @@ import com.projectyukti.yukti.ui.theme.YuktiTheme
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.database.FirebaseDatabase
 import com.onesignal.OneSignal
+import com.projectyukti.yukti.gitignore.Constants
 
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
 // Initialize OneSignal
         OneSignal.initWithContext(this)
-        OneSignal.setAppId("02eb57f2-fe80-41d7-917c-ed6cdb1b6567")
+        OneSignal.setAppId(Constants().oneSignalApiKey)
         Log.d("OneSignal", "App ID is set")
         // Optional: Request notification permissions for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

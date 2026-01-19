@@ -51,6 +51,14 @@ dependencies {
 
 
     implementation ("com.onesignal:OneSignal:4.8.6")
+    // Supabase core
+    implementation("io.github.jan-tennert.supabase:supabase-kt:2.5.4")
+
+// PostgREST (tables)
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.5.4")
+
+// Ktor engine (required)
+    implementation("io.ktor:ktor-client-okhttp:2.3.7")
 
 
     implementation (libs.guava)
