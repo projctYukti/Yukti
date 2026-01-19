@@ -75,7 +75,7 @@ fun AppNavigation(
 
     // Determine the start destination based on the sign-in state
     val startDestination = if (googleAuthUiClient.getSignedInUser() != null) {
-        Routes.home
+        Routes.chat
     } else {
         Routes.signIn
     }
