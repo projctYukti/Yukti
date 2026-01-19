@@ -18,7 +18,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.projectyukti.yukti.chat.MessageModel
 import com.projectyukti.yukti.createbusiness.ExportChatData
-import com.projectyukti.yukti.gitignore.Constants
 import com.projectyukti.yukti.texttospeach.TTSHelper
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.java.GenerativeModelFutures
@@ -41,6 +40,7 @@ import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.State
+import com.projectyukti.yukti.gitignore.Constants
 import java.util.Locale
 
 class ChatViewModel : ViewModel() {
@@ -66,7 +66,7 @@ class ChatViewModel : ViewModel() {
     }
     // Generative model client
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-2.5-flash",
         apiKey = Constants().geminiApiKey,
     )
 
@@ -89,41 +89,42 @@ class ChatViewModel : ViewModel() {
     fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String,context: Context) {
 
         viewModelScope.launch {
+            // Add the user's message to the local list and save to Firebase
+            val userMessageModel = MessageModel(message = userMessage + "\n" + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
+            val ttsHelper =  TTSHelper(context)
+            val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill","invoice")
+            var chatHistory: String
+            var typingMessage: MessageModel
+
+            messageList.add(userMessageModel)
+            Log.d("userMessageModel",userMessageModel.toString())
+            saveMessageToFirebase(chatId, userMessageModel, businessId, businessName)
+
+            if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true)}){
+                // Add "Typing..." message to the local list (but do NOT save it to Firebase)
+                typingMessage = MessageModel(message = "Generating a bill ...", role = "model", timestamp = getCurrentDateTime())
+                messageList.add(typingMessage)
+
+                chatHistory = messageList.filter { it.message != "Generating a bill ..." }.joinToString("\n") {
+                    "${it.role}: ${it.message}"
+                }
+
+            }else{
+
+                // Add "Typing..." message to the local list (but do NOT save it to Firebase)
+                typingMessage = MessageModel(message = "Typing...", role = "model", timestamp = getCurrentDateTime())
+                messageList.add(typingMessage)
+
+
+                // Prepare chat history (include loaded Firebase messages)
+
+                chatHistory = messageList.filter { it.message != "Typing..." }.joinToString("\n") {
+                    "${it.role}: ${it.message}"
+                }
+
+            }
             try {
-                // Add the user's message to the local list and save to Firebase
-                val userMessageModel = MessageModel(message = userMessage + "\n" + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
-                val ttsHelper =  TTSHelper(context)
-                val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill","invoice")
-                var chatHistory: String
-                var typingMessage: MessageModel
 
-                messageList.add(userMessageModel)
-                Log.d("userMessageModel",userMessageModel.toString())
-                saveMessageToFirebase(chatId, userMessageModel, businessId, businessName)
-
-                if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true)}){
-                    // Add "Typing..." message to the local list (but do NOT save it to Firebase)
-                    typingMessage = MessageModel(message = "Generating a bill ...", role = "model", timestamp = getCurrentDateTime())
-                    messageList.add(typingMessage)
-
-                    chatHistory = messageList.filter { it.message != "Generating a bill ..." }.joinToString("\n") {
-                        "${it.role}: ${it.message}"
-                    }
-
-                    }else{
-
-                    // Add "Typing..." message to the local list (but do NOT save it to Firebase)
-                    typingMessage = MessageModel(message = "Typing...", role = "model", timestamp = getCurrentDateTime())
-                    messageList.add(typingMessage)
-
-
-                    // Prepare chat history (include loaded Firebase messages)
-
-                    chatHistory = messageList.filter { it.message != "Typing..." }.joinToString("\n") {
-                        "${it.role}: ${it.message}"
-                    }
-
-                    }
 
 
 
@@ -154,11 +155,15 @@ class ChatViewModel : ViewModel() {
                 if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true) } && modelResponse.text.toString() != null){
                     ExportChatData().exportChatData(context, modelResponse.text.toString())
                 }
-
-//            } catch (e: Exception) {
-//                _errorState.value = "Something went wrong. Please try again."
-//                Log.d("Gemini", e.toString())
-//                e.printStackTrace()
+            } catch (e: Exception) {
+              _errorState.value = "Something went wrong. Please try again."
+                // Remove "Typing..." message from the local list
+                messageList.remove(typingMessage)
+                // Add the model's response to the local list and save to Firebase
+                val modelMessageModel = MessageModel(message = "Something went wrong. Please try again.", role = "model", timestamp = getCurrentDateTime())
+                messageList.add(modelMessageModel)
+                Log.d("Gemini", e.toString())
+              e.printStackTrace()
             }catch (e : ServerException){
                 _errorState.value = "The model is overloaded. Please try again later."
                 Log.d("Gemini", e.toString())
@@ -219,7 +224,7 @@ class ChatViewModel : ViewModel() {
 
                         try {
                             val generativeModel = GenerativeModel(
-                                modelName = "gemini-1.5-flash",
+                                modelName = "gemini-2.5-flash",
                                 apiKey = Constants().geminiApiKey
                             )
                             val response = generativeModel.generateContent(prompt)
@@ -349,7 +354,7 @@ fun geminiImagePrompt(
     LaunchedEffect(photoBitmap) {
         try {
             val geminiApiKey = Constants().geminiApiKey // Replace with your actual API key
-            val modelName = "gemini-1.5-flash"
+            val modelName = "gemini-2.5-flash"
             val gm = GenerativeModel(modelName, geminiApiKey)
             val model = GenerativeModelFutures.from(gm)
 

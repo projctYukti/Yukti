@@ -1,6 +1,5 @@
 package com.projectyukti.yukti.notifications
 import android.util.Log
-import com.projectyukti.yukti.gitignore.Constants
 import okhttp3.*
 import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineScope
