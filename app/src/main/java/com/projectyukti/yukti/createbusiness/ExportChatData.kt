@@ -16,6 +16,8 @@ import java.io.FileWriter
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
+import com.projectyukti.yukti.createbusiness.joinbusiness.businesschat.ChatViewModel
+import com.projectyukti.yukti.subscription.SubscriptionCache.getSubscriptionDetails
 import java.io.File
 import java.io.FileOutputStream
 
@@ -135,7 +137,7 @@ class ExportChatData {
 
 
     fun exportPdfData(context: Context, data: String) {
-        val file = generateDynamicPdfFile(context, "chat_data", data)
+        val file = generateDynamicPdfFile(context, getSubscriptionDetails(context).second.toString()+ " " + ChatViewModel().getCurrentDateTime(), data)
         if (file != null) {
             sharePdfFile(context, file)
         } else {
