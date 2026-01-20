@@ -13,6 +13,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -58,7 +59,7 @@ class ChatViewModel : ViewModel() {
         val chatMessage = ChatMessage(
             sender = senderUid,
             receiver = receiverUid,
-            message = message + "\n" + getCurrentDateTime(),
+            message = message ,
             timestamp = getCurrentDateTime(),
 
         )
@@ -152,8 +153,38 @@ class ChatViewModel : ViewModel() {
     }
     fun getCurrentDateTime(): String {
         val currentDateTime = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm a")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // You can customize the format
         return currentDateTime.format(formatter)
+    }
+    fun getChatTime(timestamp: String): String {
+        Log.d("messageTimeStampConversion" ,timestamp)
+        return try {
+            val input = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            val output = DateTimeFormatter.ofPattern("hh:mm a")
+            Log.d("messageTimeStampConversion" ,LocalDateTime.parse(timestamp, input).format(output).toString())
+            LocalDateTime.parse(timestamp, input).format(output)
+        } catch (e: Exception) {
+            Log.d("messageTimeStampConversion" ,timestamp + e.toString())
+            ""
+
+        }
+    }
+    fun getChatDateLabel(timestamp: String): String {
+        return try {
+            val input = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            val messageDate = LocalDateTime.parse(timestamp, input).toLocalDate()
+            val today = LocalDate.now()
+
+            when {
+                messageDate == today -> "Today"
+                messageDate == today.minusDays(1) -> "Yesterday"
+                else -> messageDate.format(
+                    DateTimeFormatter.ofPattern("dd MMMM yyyy")
+                )
+            }
+        } catch (e: Exception) {
+            ""
+        }
     }
 
 

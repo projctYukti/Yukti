@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
@@ -48,6 +49,9 @@ import com.projectyukti.yukti.navigation.isKeyboardOpen
 import com.projectyukti.yukti.ui.theme.ColorModelMessage
 import com.projectyukti.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
+import com.projectyukti.yukti.chat.DateHeader
+import getChatDateLabel
+import getChatTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,13 +175,21 @@ fun businessChatPage(
                     modifier = Modifier.weight(1f).fillMaxSize(), reverseLayout = true,
 
                 ) {
+                    var lastDateLabel: String? = null
                     itemsIndexed(messages.reversed()) { index, chatMessage ->
+                        val currentDateLabel = getChatDateLabel(chatMessage.timestamp)
+                        // 👇 Show date header only when date changes
                         ChatBubble(
                             chatMessage = chatMessage,
                             isCurrentUser = chatMessage.sender == currentUserUid,
                             currentUsername,
                             receiverUsername
                         )
+                        if (currentDateLabel != lastDateLabel) {
+                            DateHeader(date = currentDateLabel)
+                            lastDateLabel = currentDateLabel
+                        }
+
                     }
                 }
                 // Typing Indicator
@@ -246,9 +258,9 @@ fun ChatBubble(chatMessage: ChatMessage, isCurrentUser: Boolean, currentUsername
                         top = 8.dp,
                         bottom = 8.dp
                     )
-                    .clip(RoundedCornerShape(48f))
+                    .clip(RoundedCornerShape(38f))
                     .background(if (isCurrentUser) ColorUserMessage else ColorModelMessage)
-                    .padding(16.dp)
+                    .padding( 10.dp,5.dp)
             ) {
                 Column {
 
@@ -259,6 +271,12 @@ fun ChatBubble(chatMessage: ChatMessage, isCurrentUser: Boolean, currentUsername
 
 
                     ) // Different text color based on user)
+                    Text(
+                        text = getChatTime(chatMessage.timestamp),
+                        fontSize = 10.sp,
+                        color = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.align(Alignment.End)
+                    )
                 }
             }
         }
