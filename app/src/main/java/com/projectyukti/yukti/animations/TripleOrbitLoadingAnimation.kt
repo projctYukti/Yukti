@@ -35,7 +35,7 @@ private const val POSITION_START_OFFSET_INNER_CIRCLE =135f
      val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 360f,
+        targetValue = 30f,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = 1000),

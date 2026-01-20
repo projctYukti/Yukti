@@ -9,6 +9,7 @@ import com.projectyukti.yukti.notifications.SendMessageNotification
 import com.projectyukti.yukti.subscription.SubscriptionCache
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.projectyukti.yukti.supabase.EdgeFunction
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -80,7 +81,7 @@ class ChatViewModel : ViewModel() {
                             if (!fcmToken.isNullOrEmpty()) {
                                 // Send the notification with the fetched FCM token
                                 Log.e("FCM", "Got Fcm token for receiver: $fcmToken")
-                                SendMessageNotification().sendNotificationToReceiver(fcmToken, currentUserName, message)
+                                EdgeFunction().sendPushViaEdgeFunction(fcmToken, currentUserName, message)
                             } else {
                                 Log.e("FCM", "FCM token is null or empty for receiver: $receiverUid")
                             }

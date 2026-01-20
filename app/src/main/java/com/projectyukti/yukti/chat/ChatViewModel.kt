@@ -95,11 +95,14 @@ class ChatViewModel : ViewModel() {
     fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String,context: Context) {
 
         viewModelScope.launch {
-            SupabaseCRUD().insertBusinessData(businessId, businessName, userMessage, getCurrentDateTime())
+
             // Add the user's message to the local list and save to Firebase
             val userMessageModel = MessageModel(message = userMessage , role = "user", timestamp = getCurrentDateTime())
             val ttsHelper =  TTSHelper(context)
             val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill","invoice")
+            val dbCallKeywords = listOf("add","save")
+            val dbCall = MessageModel(message =" user might be asking to add some data to the database, please generate a response"+
+                    " like SupabaseCRUD().insertBusinessData() , this will trigger the function ",role = "user", timestamp = getCurrentDateTime())
             var chatHistory: String
             var typingMessage: MessageModel
 
@@ -130,6 +133,17 @@ class ChatViewModel : ViewModel() {
                 }
 
             }
+            if (dbCallKeywords.any { dbCallKeyword -> userMessage.contains(other = dbCallKeyword, ignoreCase = true)}){
+
+                typingMessage = MessageModel(message = "Inserting items into the inventory ...", role = "model", timestamp = getCurrentDateTime())
+
+                SupabaseCRUD().insertBusinessData(businessId, businessName, userMessage, getCurrentDateTime(),
+                    FirebaseAuth.getInstance().currentUser?.displayName.toString())
+                chatHistory = messageList.filter { it.message != "Inserting items into the inventory ..." }.joinToString("\n") {
+                    "${it.role}: ${it.message}"
+                }
+
+                }
             try {
 
 
@@ -162,6 +176,7 @@ class ChatViewModel : ViewModel() {
                 if (keywords.any { keyword -> userMessage.contains(keyword, ignoreCase = true) } && modelResponse.text.toString() != null){
                     ExportChatData().exportChatData(context, modelResponse.text.toString())
                 }
+
             } catch (e: Exception) {
               _errorState.value = "Something went wrong. Please try again."
                 // Remove "Typing..." message from the local list

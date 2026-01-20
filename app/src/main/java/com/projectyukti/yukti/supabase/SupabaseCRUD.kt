@@ -12,12 +12,13 @@ class SupabaseCRUD {
     ) {
         install(Postgrest)
     }
-    suspend fun insertBusinessData(businessId: String?, businessName: String, itemName: String, addedOn: String) {
+    suspend fun insertBusinessData(businessId: String?, businessName: String, itemName: String, addedOn: String, addedBy: String) {
         val data = mapOf(
             "business_id" to businessId,
             "business_name" to businessName,
             "item_name" to itemName,
-            "added_on" to addedOn
+            "added_on" to addedOn,
+            "added_by" to addedBy
         )
 
         val result = supabase.from("Business_data").insert(data)
