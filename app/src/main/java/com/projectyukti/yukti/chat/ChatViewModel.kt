@@ -264,8 +264,9 @@ class ChatViewModel : ViewModel() {
                     for (messageSnapshot in snapshot.children) {
                         val message = messageSnapshot.child("message").value as? String
                         val role = messageSnapshot.child("role").value as? String
+                        val timeStamp = messageSnapshot.child("timestamp").value as? String
                         if (message != null && role != null) {
-                            newMessageList.add(MessageModel(message = message, role = role, timestamp = getCurrentDateTime()))
+                            newMessageList.add(MessageModel(message = message, role = role, timestamp = timeStamp.toString()))
                         }
                     }
 
@@ -292,8 +293,9 @@ class ChatViewModel : ViewModel() {
                     for (messageSnapshot in snapshot.children) {
                         val message = messageSnapshot.child("message").value as? String
                         val role = messageSnapshot.child("role").value as? String
+                        val timeStamp = messageSnapshot.child("timestamp").value as? String
                         if (message != null && role != null) {
-                            newMessageList.add(MessageModel(message = message, role = role, timestamp = getCurrentDateTime()))
+                            newMessageList.add(MessageModel(message = message, role = role, timestamp = timeStamp.toString()))
                         }
                     }
 
@@ -463,7 +465,23 @@ fun getChatTime(timestamp: String): String {
 
     }
 }
+fun getChatDateLabel(timestamp: String): String {
+    return try {
+        val input = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val messageDate = LocalDateTime.parse(timestamp, input).toLocalDate()
+        val today = LocalDate.now()
 
+        when {
+            messageDate == today -> "Today"
+            messageDate == today.minusDays(1) -> "Yesterday"
+            else -> messageDate.format(
+                DateTimeFormatter.ofPattern("dd MMMM yyyy")
+            )
+        }
+    } catch (e: Exception) {
+        ""
+    }
+}
 
 
 

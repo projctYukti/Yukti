@@ -77,6 +77,7 @@ import com.projectyukti.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
 import com.projectyukti.yukti.createbusiness.ExportChatData
 import geminiImagePrompt
+import getChatDateLabel
 import getChatTime
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -389,8 +390,17 @@ fun MessageList(modifier: Modifier = Modifier, messageList: List<MessageModel>) 
         modifier = modifier,
         reverseLayout = true // Start from the bottom like chat apps
     ) {
+        var lastDateLabel: String? = null
         items(messageList.reversed()) { message ->
+            val currentDateLabel = getChatDateLabel(message.timestamp)
+
+
             MessaageRow(messageModel = message)
+            // 👇 Show date header only when date changes
+            if (currentDateLabel != lastDateLabel) {
+                DateHeader(date = currentDateLabel)
+                lastDateLabel = currentDateLabel
+            }
         }
     }
 }
@@ -435,6 +445,22 @@ fun MessaageRow(messageModel: MessageModel) {
         }
     }
 }
+@Composable
+fun DateHeader(date: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = date,
+            fontSize = 12.sp,
+            color = Color.Gray
+        )
+    }
+}
+
 
 @Composable
 fun MessageInput(
