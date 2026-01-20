@@ -1,6 +1,9 @@
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
+import java.time.LocalDate
+
+
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.OnInitListener
 import android.util.Log
@@ -41,6 +44,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.State
 import com.projectyukti.yukti.gitignore.Constants
+import com.projectyukti.yukti.supabase.SupabaseCRUD
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Locale
 
 class ChatViewModel : ViewModel() {
@@ -89,8 +95,9 @@ class ChatViewModel : ViewModel() {
     fun sendMessage(chatId: String, userMessage: String,businessId: String?,businessName: String,context: Context) {
 
         viewModelScope.launch {
+            SupabaseCRUD().insertBusinessData(businessId, businessName, userMessage, getCurrentDateTime())
             // Add the user's message to the local list and save to Firebase
-            val userMessageModel = MessageModel(message = userMessage + "\n" + getCurrentDateTime(), role = "user", timestamp = getCurrentDateTime())
+            val userMessageModel = MessageModel(message = userMessage , role = "user", timestamp = getCurrentDateTime())
             val ttsHelper =  TTSHelper(context)
             val keywords = listOf("generateBill","generate", "bill", "createInvoice", "generateReport", "makeBill","invoice")
             var chatHistory: String
@@ -443,4 +450,20 @@ fun ResultDisplay(result: String) {
         Text(text = result)
     }
 }
+fun getChatTime(timestamp: String): String {
+    Log.d("messageTimeStampConversion" ,timestamp)
+    return try {
+        val input = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val output = DateTimeFormatter.ofPattern("hh:mm a")
+        Log.d("messageTimeStampConversion" ,LocalDateTime.parse(timestamp, input).format(output).toString())
+        LocalDateTime.parse(timestamp, input).format(output)
+    } catch (e: Exception) {
+        Log.d("messageTimeStampConversion" ,timestamp + e.toString())
+        ""
+
+    }
+}
+
+
+
 

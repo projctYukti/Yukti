@@ -152,8 +152,9 @@ class ChatViewModel : ViewModel() {
     }
     fun getCurrentDateTime(): String {
         val currentDateTime = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // You can customize the format
+        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, hh:mm a")
         return currentDateTime.format(formatter)
     }
+
 
 }

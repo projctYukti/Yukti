@@ -46,9 +46,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.projectyukti.yukti.MainActivity
@@ -75,6 +77,7 @@ import com.projectyukti.yukti.ui.theme.ColorUserMessage
 import com.google.firebase.auth.FirebaseAuth
 import com.projectyukti.yukti.createbusiness.ExportChatData
 import geminiImagePrompt
+import getChatTime
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -395,30 +398,39 @@ fun MessageList(modifier: Modifier = Modifier, messageList: List<MessageModel>) 
 @Composable
 fun MessaageRow(messageModel: MessageModel) {
     val isModel = messageModel.role == "model"
-
+    Log.d("messageTimeStamp" ,messageModel.timestamp)
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .align(if (isModel) Alignment.BottomStart else Alignment.BottomEnd)
                     .padding(
                         start = if (isModel) 8.dp else 70.dp,
                         end = if (isModel) 70.dp else 8.dp,
                         top = 8.dp,
-                        bottom = 8.dp
+
                     )
-                    .clip(RoundedCornerShape(48f))
+                    .clip(RoundedCornerShape(38f))
                     .background(if (isModel) ColorModelMessage else ColorUserMessage)
-                    .padding(16.dp)
+                    .padding( 10.dp,5.dp)
             ) {
                 Text(
                     text = messageModel.message,
                     color = Color.White
+
                 )
+
+                Text(
+                    text = getChatTime(messageModel.timestamp),
+                    fontSize = 10.sp,
+                    color = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.align(Alignment.End)
+                )
+                Log.d("messageTimeStampAfterConversion" ,getChatTime(messageModel.timestamp))
             }
         }
     }
