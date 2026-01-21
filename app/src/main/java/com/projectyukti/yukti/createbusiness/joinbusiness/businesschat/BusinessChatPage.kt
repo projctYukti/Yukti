@@ -55,7 +55,7 @@ import getChatTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun businessChatPage(
+fun BusinessChatPage(
     receiverUsername: String,
     receiverUid: String,
     navController: NavHostController,

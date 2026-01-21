@@ -49,7 +49,7 @@ import com.projectyukti.yukti.createbusiness.BusinessSetupPage
 import com.projectyukti.yukti.createbusiness.SubscriptionPage
 import com.projectyukti.yukti.createbusiness.businessMembers
 import com.projectyukti.yukti.createbusiness.joinbusiness.JoinBusinessPage
-import com.projectyukti.yukti.createbusiness.joinbusiness.businesschat.businessChatPage
+import com.projectyukti.yukti.createbusiness.joinbusiness.businesschat.BusinessChatPage
 import com.projectyukti.yukti.sign_in.GoogleAuthUiClient
 import com.projectyukti.yukti.sign_in.SignInScreen
 import com.projectyukti.yukti.sign_in.SignInViewModel
@@ -226,7 +226,7 @@ fun AppNavigation(
                 val username = backStackEntry.arguments?.getString("username") ?: ""
                 val uid = backStackEntry.arguments?.getString("uid") ?: ""
                 val profilePictureUrl = Uri.decode(backStackEntry.arguments?.getString("profilePictureUrl") ?: "")
-                businessChatPage(
+                BusinessChatPage(
                     receiverUsername = username,
                     receiverUid = uid,
                     navController = navController,
